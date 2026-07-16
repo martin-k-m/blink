@@ -1,4 +1,4 @@
-# ⚡ Blink
+# 👁️ Blink
 
 **A Rust-powered developer acceleration toolkit.**
 
@@ -19,6 +19,8 @@ environment — all from one small, fast binary.
 npm install -g @martin-k-m/blink
 blink inspect
 ```
+
+📦 **On npm:** [`@martin-k-m/blink`](https://www.npmjs.com/package/@martin-k-m/blink)
 
 New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
 

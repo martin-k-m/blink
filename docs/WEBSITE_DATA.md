@@ -1,16 +1,21 @@
 # Website Data
 
 Structured reference for building a marketing/docs site for Blink.
-Everything under "Current" is implemented, tested, and published as of
-v0.5.0. Future work stays under "Roadmap," clearly labeled.
+Everything below is implemented, tested, and published.
+
+## Links
+
+- **npm:** https://www.npmjs.com/package/@martin-k-m/blink
+- **Repository:** https://github.com/martin-k-m/blink
+- **Install:** `npm install -g @martin-k-m/blink`
 
 ## Status
 
-- **Published on npm** as **`@martin-k-m/blink`** (v0.5.0). Install with
-  `npm install -g @martin-k-m/blink`. Note the unscoped `blink-cli` is an
+- **Published on npm** as **`@martin-k-m/blink`**, auto-released via CI on
+  each version tag (with build provenance). The unscoped `blink-cli` is an
   unrelated, deprecated package — always use the scoped name.
-- **Public GitHub release** `v0.5.0` with checksummed binaries for
-  macOS (x64/arm64), Linux (x64/arm64), and Windows (x64).
+- **Public GitHub releases** with checksummed binaries for macOS
+  (x64/arm64), Linux (x64/arm64), and Windows (x64).
 - **Public repository** at `github.com/martin-k-m/blink`.
 - The npm package downloads its platform binary via a postinstall script;
   on npm setups that block install scripts, users allow it for this
@@ -131,13 +136,6 @@ On any other platform, build from source with a Rust toolchain.
 Development is verified on Windows; the other targets are built and
 released by CI.
 
-## Roadmap (not yet built)
-
-- A real build/bundling pipeline (`blink build` is currently cache
-  bookkeeping, not a bundler).
-- AST-aware unused-dependency detection (today's is a source-text scan).
-- A VS Code extension.
-- A plugin *registry* (today, `blink plugins install` only copies a local
-  file — there's nothing to browse or fetch by name).
-
-Full detail: [`docs/roadmap.md`](roadmap.md).
+<!-- Website should present the shipped product; the forward-looking
+roadmap lives in docs/roadmap.md and is intentionally not surfaced here to
+avoid advertising unbuilt features. -->

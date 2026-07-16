@@ -23,13 +23,18 @@ signature alternate filename for the `blink.toml` schema. Then a Phase 9
 `FEATURE_AUDIT.md`, more fixtures/docs). 142 tests passing, `cargo
 fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s v0.5 section for
 what shipped and which spec collisions were resolved how.
-**Published (v0.5.0):** the repo is public, tagged `v0.5.0`, released with
-cross-platform binaries, and on npm as **`@martin-k-m/blink`**
-(`npm install -g @martin-k-m/blink` — verified end-to-end). The unscoped
-`blink-cli` on npm is an unrelated package; always use the scoped name. To
-cut a new release: bump the workspace + `packages/blink-cli` version
-together, then `git tag vX.Y.Z && git push origin vX.Y.Z`, then
-`npm publish` (owner does the npm publish).
+**Published & auto-releasing (currently `0.5.3`):** the repo is public and
+on npm as **`@martin-k-m/blink`** (`npm install -g @martin-k-m/blink`). The
+unscoped `blink-cli` on npm is an unrelated package; always use the scoped
+name. **Releasing is fully automated** via `.github/workflows/release.yml`
+on a `v*.*.*` tag: it builds cross-platform binaries, creates the GitHub
+release, publishes to npm (`--provenance`, needs the `NPM_TOKEN` secret),
+and publishes to GitHub Packages (repo sidebar). To cut a release: bump the
+workspace + `packages/blink-cli` versions together, then
+`git tag vX.Y.Z && git push origin vX.Y.Z` — no manual `npm publish`.
+(Gotcha fixed here once: an `on: release` publish workflow never fired
+because releases created by the default `GITHUB_TOKEN` don't emit a
+triggering `release` event; the publish now lives inside release.yml.)
 
 **Outstanding, not yet addressed:** GitHub flagged 3 Dependabot
 vulnerabilities on `main` (1 high, 2 moderate) after the v0.4 merge —

@@ -6,35 +6,17 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Versioning
 
-Entries below use the milestone versions the docs reference (`v0.1`–`v0.5`).
-These milestones have all been merged to `main`, but **no Git tag has been
-pushed and no GitHub Release exists yet** — the first tagged release is
-still pending (see [`docs/roadmap.md`](docs/roadmap.md)). Until then, the
-top entry is the current state of `main`. The workspace manifest version is
-independent of these milestone labels and is bumped at release time.
+**`0.5.0` is the intended first tagged release.** The workspace and the npm
+package are versioned `0.5.0`; tagging `v0.5.0` triggers the release
+workflow that builds the cross-platform binaries. Until that tag is pushed,
+no GitHub Release or npm package exists yet (see the README's Status
+section). Earlier `v0.1`–`v0.4` entries below are development milestones
+that were merged to `main` but never tagged individually.
 
-## [Unreleased]
+## [0.5.0] — 2026-07-16
 
-Stabilization toward a 1.0 release (no new features):
-
-### Added
-- `docs/FEATURE_AUDIT.md` — a per-command and per-crate inventory.
-- Actionable error messages: failures render a branded block that explains
-  the cause and suggests concrete fixes.
-- A grouped `blink --help` overview so the command set reads as one tool.
-- `node_project` and `monorepo` test fixtures.
-
-### Changed
-- Refreshed `README.md`, `docs/WEBSITE_DATA.md`, and the docs to match the
-  shipped v0.5 surface (eleven crates, the full command set, `.bnk`).
-- **Corrected install/availability claims to reflect reality.** Blink is
-  pre-release: not on npm, no public release, private repo. Docs now lead
-  with build-from-source and label npm/releases as planned. Removed the
-  `npm install -g blink-cli` instruction everywhere — that npm name is an
-  unrelated, deprecated package. Added a "Status" section to the README
-  and the website data.
-
-## [v0.5] — Project intelligence, indexing & workflow engine
+The first tagged release. Bundles the v0.5 feature work with the 1.0
+stabilization pass.
 
 ### Added
 - **Intelligence:** `inspect`, `optimize`, `duplicates`, `doctor`,
@@ -47,11 +29,17 @@ Stabilization toward a 1.0 release (no new features):
   schema, with `[commands]`, `[index]`, `[profiles]`, `[scan]`, `[report]`,
   and `[plugins.*]` tables, plus `blink config check`.
 - Two new crates: `blink-index` and `blink-workflow`.
+- `docs/FEATURE_AUDIT.md`, actionable error messages, a grouped
+  `blink --help`, and `node_project` + `monorepo` test fixtures.
+
+### Changed
+- Refreshed the README and docs to the shipped surface (eleven crates, the
+  full command set, `.bnk`), and corrected install claims to reflect that
+  Blink is pre-release (build-from-source; npm/releases labeled planned).
 
 ### Notes
 - `blink run` stayed the dev server; task-running is `blink task`.
-- Deferred deliberately (need a published release to verify against): a
-  remote plugin registry and `blink self update`.
+- Deferred deliberately: a remote plugin registry and `blink self update`.
 
 ## [v0.4] — Intelligent platform
 

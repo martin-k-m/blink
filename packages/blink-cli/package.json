@@ -1,6 +1,6 @@
 {
   "name": "blink-cli",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "description": "A Rust-powered developer acceleration toolkit. This package downloads the native `blink` binary for your platform on install.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/martin-k-m/blink",

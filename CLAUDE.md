@@ -1,0 +1,146 @@
+# CLAUDE.md
+
+Context for Claude Code (or any agent) picking up this repository. Read
+this before making changes — it captures decisions and environment
+quirks that aren't obvious from the code alone.
+
+## What this project is
+
+Blink is a Rust developer-acceleration CLI: project detection, dependency
+health analysis, a dev server, a build cache, a plugin system, and an
+interactive terminal dashboard, distributed via npm. It was built in this
+repo from an empty skeleton (`README.md` + `LICENSE`) up through four
+shipped milestones (v0.1–v0.4). See `docs/roadmap.md` for what shipped in
+each and `docs/architecture.md` for how the nine crates fit together.
+
+**Current status:** v0.4 is merged to `main`. 105 tests passing,
+`cargo fmt`/`clippy -D warnings` clean, release build verified. **Nothing
+has been published** — no `npm publish`, no `git tag` pushed, so no
+GitHub Release exists yet and the npm package (`packages/blink-cli`) has
+nothing real to download (it's been verified end-to-end against a
+*locally built* binary via `BLINK_LOCAL_BIN`, not a real release).
+
+**Outstanding, not yet addressed:** GitHub flagged 3 Dependabot
+vulnerabilities on `main` (1 high, 2 moderate) after the v0.4 merge —
+check https://github.com/martin-k-m/blink/security/dependabot. This
+hasn't been investigated. Running `blink security .` (a command this
+project itself built) against this repo's own dependency tree would be
+a reasonable first step, alongside checking Dependabot's actual advisory
+details.
+
+**Planned but explicitly not started:** the project owner has written
+detailed specs for several more phases (universal project intelligence,
+a daily-driver task runner, an indexing engine, a `.bnk` project config
+file). Full specs are preserved in
+[`docs/planning/phase-5-8-vision.md`](docs/planning/phase-5-8-vision.md);
+summary and status in `docs/roadmap.md`'s "Beyond v0.6" section. **Do not
+start implementing these without a fresh, explicit go-ahead** — the specs
+were pasted for context preservation, not as a current work order, and
+several of them collide with naming/scope already shipped (see the notes
+inline in that file).
+
+## Environment setup (this matters — read before running any cargo command)
+
+This has been a **Windows sandbox with no Rust or Node.js on PATH by
+default**. If a fresh session can't run `cargo` or `node`, this is why,
+and here's the fix:
+
+- **Rust toolchain:** installed via `winget install --id Rustlang.Rustup`.
+  The default `x86_64-pc-windows-msvc` host toolchain **does not work in
+  this sandbox** — there's no MSVC linker, and git-bash's PATH shadows a
+  fake `link.exe` (GNU coreutils' hardlink tool) ahead of any real linker,
+  producing baffling "extra operand" errors that look like a linker bug
+  but aren't. The fix that worked: install and default to
+  `stable-x86_64-pc-windows-gnu` (`rustup toolchain install
+  stable-x86_64-pc-windows-gnu && rustup default
+  stable-x86_64-pc-windows-gnu`), **and** install a real MinGW toolchain
+  via `winget install --id BrechtSanders.WinLibs.POSIX.UCRT` (rustup's own
+  bundled "self-contained" linker for the GNU target is incomplete — it's
+  missing `as`/other binutils that `dlltool` needs, so builds still fail
+  without a full external MinGW install).
+- **Node.js:** already installed on this machine at
+  `C:\Program Files\nodejs\node.exe`, just not on PATH for tool-invoked
+  shells. Needed for `packages/blink-cli`'s install/postinstall scripts.
+- **PATH does not persist between tool calls.** Each Bash/PowerShell
+  invocation is a fresh shell that doesn't inherit exports from a
+  previous call, and registry-level PATH edits (`setx`, `[Environment]::
+  SetEnvironmentVariable(..., "User")`) don't take effect in an
+  already-running tool-shell host process either. The reliable pattern:
+  prefix every cargo-invoking command with the full PATH additions, e.g.:
+
+  ```powershell
+  $mingwBin = "C:\Users\comma\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin"
+  $env:Path = "$env:USERPROFILE\.cargo\bin;$mingwBin;" + $env:Path
+  cargo test --workspace
+  ```
+
+  or in Bash: `export PATH="$PATH:/c/Users/comma/.cargo/bin"` (and for
+  Node: `export PATH="$PATH:/c/Program Files/nodejs"`) before the actual
+  command, every time.
+- **Never `git checkout -- <file>` (or any destructive git op) without
+  checking `git status`/`git diff` first, and prefer not to at all
+  mid-session.** This happened once in this project's history: a
+  `git checkout -- crates/blink-cli/src/main.rs` intended to undo a
+  one-line test edit instead silently reverted the file to the *last
+  commit*, wiping out an entire session's worth of uncommitted subcommand
+  wiring. It was caught and manually re-applied, but it cost real time
+  and could have been worse. Use the Edit tool to undo specific changes
+  instead of git plumbing, especially when there's uncommitted work.
+
+## Verification workflow
+
+Every change in this project's history has been verified the same way
+before being considered done:
+
+```sh
+cargo fmt --all
+cargo fmt --all -- --check          # confirm it's actually clean
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo build --release -p blink-cli  # release profile catches things dev doesn't
+```
+
+Then a manual smoke test of whatever command changed, run against this
+repo itself (`blink scan .`, `blink analyze .`, etc. from
+`target/debug/` or `target/release/`) — not just unit tests. Several real
+bugs in this project were caught only by looking at actual command
+output (e.g. a fixture's own explanatory comment accidentally containing
+the literal dependency name it was supposed to test as "unused",
+defeating the test).
+
+Clean up `.blink/` (the build-cache dir) and any `node_modules/` created
+during manual testing before considering a change done — `git status`
+should show only intentional source changes.
+
+## Design standards this codebase holds itself to
+
+Documented explicitly in `docs/architecture.md` ("Design decisions worth
+knowing about") and `docs/analysis.md`, and worth internalizing before
+adding anything:
+
+- **No fabricated numbers or fake output.** Every timing, size, score, or
+  count shown anywhere is measured at run time or derived from a
+  concrete, checkable fact. Where something is a heuristic (the health
+  score, its sub-scores), it's explicitly documented as one, with the
+  exact rule/weight table shown.
+- **Offline by default.** The only network calls anywhere are the opt-in
+  `--online` outdated-package check and `blink security`'s OSV.dev
+  lookup. Both are opt-in specifically so `cargo test` never needs
+  network access.
+- **Real verification over plausible-looking work.** Features in this
+  project (the plugin system, the npm installer, the dashboard) were
+  proven working end-to-end with actual execution — a real compiled test
+  plugin, a real `npm install` + postinstall run, an actual rendered TUI
+  frame buffer — not just "the code looks right." Prefer that pattern
+  for new work too.
+
+## Where to look for more context
+
+- `docs/architecture.md` — crate-by-crate breakdown and why the
+  boundaries are where they are.
+- `docs/analysis.md` — exact rules/weights behind every score and check.
+- `docs/cli.md` — every command and flag.
+- `docs/roadmap.md` — what shipped in which release, what's next.
+- `docs/planning/phase-5-8-vision.md` — the not-yet-started future work
+  described above, preserved in full.
+- `CONTRIBUTING.md` — contributor-facing version of the workflow above.

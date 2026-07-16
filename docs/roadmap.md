@@ -99,6 +99,29 @@ a real build tool:
 - [ ] Suggestions that go beyond dependency hygiene (e.g. flagging likely
       dead code paths, once the AST-aware analysis above lands).
 
+## Beyond v0.6 — proposed, not started
+
+The project owner has written detailed proposals for several more
+phases: universal project intelligence + a workflow-optimization engine
+(`blink inspect`/`optimize`/`doctor`/`duplicates`/...), a daily-driver
+task runner and environment manager (`blink run` as a task runner,
+`setup`/`check`/`clean`/`env`/`update`/self-update/shell completion),
+a performance-focused indexing engine (`blink index`/`search`/`symbols`/
+`hotspots`), and a Blink-native project config file (proposed as `.bnk`,
+pending a naming-collision check against `blink.toml`/`.blink`, both of
+which are already taken by this project's own conventions).
+
+**None of this is implemented.** The full original specs, plus notes on
+where each proposal overlaps or conflicts with what's already shipped
+(e.g. `blink run` already means something different; `blink doctor` is
+specified twice with different scope; the proposed `.bnk` fallback names
+collide with existing `blink.toml`/`.blink/`), are preserved verbatim in
+[`docs/planning/phase-5-8-vision.md`](planning/phase-5-8-vision.md). Read
+that file — not just this summary — before starting any of it; it flags
+several design decisions (command-name collisions, config-file
+consolidation, in-process vs. subprocess plugin API) that need resolving
+deliberately rather than defaulting to whatever's easiest to type first.
+
 ## A note on phase numbering
 
 Earlier planning used "Phase 1–4" for, respectively: CLI+scanner,

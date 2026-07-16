@@ -1,9 +1,24 @@
 # Website Data
 
-Structured reference for building a marketing/docs site for Blink. Every
-item under "Current" is shipped and working as of this doc; nothing here
-is aspirational — future work is listed separately under "Roadmap" and
-should stay clearly labeled as such wherever this content is reused.
+Structured reference for building a marketing/docs site for Blink. The
+**features and commands** under "Current" are all implemented, tested, and
+working. **Distribution is not:** Blink is pre-release — no npm package, no
+public release, private repository (see "Status" below). Any site built
+from this data must present install/availability honestly and must **not**
+tell users to run `npm install -g blink-cli` (that name is an unrelated,
+deprecated package). Future work stays under "Roadmap," clearly labeled.
+
+## Status (must be represented honestly on any site)
+
+- **Not on npm.** The installer exists and is verified against a locally
+  built binary, but nothing is published. The `blink-cli` npm name is
+  taken by an unrelated deprecated tool; a real published name hasn't been
+  finalized or reserved.
+- **No public releases.** The release workflow is configured but no tag
+  has been pushed; no GitHub Release exists.
+- **Private repository.** Repo/issue/CI links don't resolve publicly yet.
+- **The install path that works today** is building from source with
+  Cargo. Present that as the install method; label npm/releases "planned."
 
 ## Tagline
 
@@ -51,18 +66,19 @@ should stay clearly labeled as such wherever this content is reused.
 
 ## Installation
 
+Building from source is the only supported install path today (Blink is
+pre-release — see Status):
+
 ```sh
-npm install -g blink-cli
+git clone <repository-url>
+cd blink
+cargo install --path crates/blink-cli
 blink --version
 ```
 
-Or build from source:
-
-```sh
-git clone https://github.com/martin-k-m/blink.git
-cd blink
-cargo install --path crates/blink-cli
-```
+Planned (not yet available): a one-line `npm install -g` and prebuilt
+binaries per platform. Don't advertise an `npm install` command until a
+real, reserved package name is published.
 
 ## CLI commands
 
@@ -101,25 +117,30 @@ detection, config) → `blink-analyzer` (dependency health) → `blink-report`
 file watching), `blink-index` (incremental file/symbol index),
 `blink-workflow` (optimize/doctor/tasks/clean/env), `blink-plugin`
 (subprocess plugins), and `blink-dashboard` (the terminal UI) alongside.
-`packages/blink-cli` is the npm package that distributes the compiled
-binary.
+`packages/blink-cli` is the npm package that *will* distribute the
+compiled binary once Blink is published (it is not, yet).
 
 Full breakdown: [`docs/architecture.md`](architecture.md).
 
 ## Supported platforms
 
-Binaries are built and published for:
+The release workflow (`.github/workflows/release.yml`) is *configured* to
+build binaries for these targets — but nothing has been released yet, so
+there are no published binaries to download today:
 
 - macOS (x64, arm64)
 - Linux (x64, arm64)
 - Windows (x64)
 
-These are exactly the targets in `.github/workflows/release.yml`'s build
-matrix — if a platform isn't listed there, there's no prebuilt binary for
-it yet, and `npm install` will say so rather than silently failing.
+Until a release is tagged, building from source (above) works on any
+platform with a Rust toolchain. Development is verified on Windows; the
+other targets are covered by CI configuration, not a hand-run.
 
 ## Roadmap (not yet built)
 
+- **Publishing:** a public repository, tagged cross-platform releases, and
+  a published npm package under a real, reserved name — the prerequisites
+  for the "install it like a real tool" story to become true.
 - A real build/bundling pipeline (`blink build` is currently cache
   bookkeeping, not a bundler).
 - AST-aware unused-dependency detection (today's is a source-text scan).

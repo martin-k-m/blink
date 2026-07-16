@@ -16,8 +16,9 @@ const result = spawnSync(binaryPath, process.argv.slice(2), { stdio: 'inherit' }
 if (result.error) {
   if (result.error.code === 'ENOENT') {
     console.error(
-      'blink-cli: native binary not found. This usually means `npm install` ' +
-        'did not finish successfully. Try reinstalling: npm install -g blink-cli'
+      'blink-cli: native binary not found. The postinstall step that ' +
+        'downloads the platform binary did not complete. Reinstall this ' +
+        'package, or build Blink from source (see the repository README).'
     );
   } else {
     console.error(`blink-cli: failed to launch: ${result.error.message}`);

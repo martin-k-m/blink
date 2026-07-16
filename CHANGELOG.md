@@ -27,6 +27,12 @@ Stabilization toward a 1.0 release (no new features):
 ### Changed
 - Refreshed `README.md`, `docs/WEBSITE_DATA.md`, and the docs to match the
   shipped v0.5 surface (eleven crates, the full command set, `.bnk`).
+- **Corrected install/availability claims to reflect reality.** Blink is
+  pre-release: not on npm, no public release, private repo. Docs now lead
+  with build-from-source and label npm/releases as planned. Removed the
+  `npm install -g blink-cli` instruction everywhere — that npm name is an
+  unrelated, deprecated package. Added a "Status" section to the README
+  and the website data.
 
 ## [v0.5] — Project intelligence, indexing & workflow engine
 

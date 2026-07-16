@@ -5,6 +5,7 @@
 > Blink removes friction between writing code and running software.
 
 [![npm](https://img.shields.io/npm/v/@martin-k-m/blink.svg)](https://www.npmjs.com/package/@martin-k-m/blink)
+[![GitHub stars](https://img.shields.io/github/stars/martin-k-m/blink)](https://github.com/martin-k-m/blink)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
 

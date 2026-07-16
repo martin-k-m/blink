@@ -1,0 +1,38 @@
+name: Publish to npm
+
+# Publishes packages/blink-cli (the npm package @martin-k-m/blink) whenever a
+# GitHub Release is published. Combined with release.yml — which builds the
+# platform binaries and creates the Release on a `v*.*.*` tag — a single tag
+# push produces both the binaries and the npm publish.
+#
+# Requires an npm **automation** token stored as the repository secret
+# NPM_TOKEN (npm → Access Tokens → Automation; then GitHub repo → Settings →
+# Secrets and variables → Actions → New repository secret → name NPM_TOKEN).
+#
+# Bump the package version before tagging: npm rejects re-publishing a version
+# that already exists, so an un-bumped release will fail this step (harmlessly).
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      # publishConfig.access=public in package.json makes this publish the
+      # scoped package publicly; no --access flag needed.
+      - name: Publish @martin-k-m/blink
+        run: npm publish
+        working-directory: packages/blink-cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

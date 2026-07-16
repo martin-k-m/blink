@@ -11,6 +11,13 @@ name: Publish to npm
 #
 # Bump the package version before tagging: npm rejects re-publishing a version
 # that already exists, so an un-bumped release will fail this step (harmlessly).
+#
+# Publishes with **provenance** (`--provenance` + `id-token: write`): npm records
+# a signed attestation linking the published package to this repo, the exact
+# commit, and this workflow run. That's what connects the npm package to GitHub —
+# it shows as a "Provenance" section on the npm page and under the repo's
+# Attestations. (npmjs.org packages do not appear in a repo's "Packages" sidebar;
+# that sidebar is only for the GitHub Packages registry.)
 
 on:
   release:
@@ -21,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write # required for npm provenance
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +40,7 @@ jobs:
       # publishConfig.access=public in package.json makes this publish the
       # scoped package publicly; no --access flag needed.
       - name: Publish @martin-k-m/blink
-        run: npm publish
+        run: npm publish --provenance
         working-directory: packages/blink-cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

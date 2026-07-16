@@ -8,16 +8,22 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
 
-Blink detects what kind of project you're in, reports on its dependency
-health with a documented (not invented) scoring system, serves it locally
-with live reload, checks for known vulnerabilities, and gives you an
-interactive terminal dashboard — all from one small, fast binary you
-install with `npm install -g blink-cli`.
+Blink is the first thing to run after cloning a repo: it tells you what
+the project is, how to run it, and where to start; reports on dependency
+health with a documented (not invented) score; indexes the codebase for
+instant search; runs the project's own tasks; and validates your
+environment — all from one small, fast binary you install with
+`npm install -g blink-cli`.
 
-New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
+New here? Start with [`docs/getting-started.md`](docs/getting-started.md),
+then run `blink inspect` in any project.
 
 ## Features
 
+- **Project intelligence** — `blink inspect` answers "what is this / how
+  do I run it / where do I start" in one screen; `blink optimize` scores
+  the project against six concrete, rule-based checks; `blink doctor`
+  verifies your environment can build it.
 - **Project detection** — Rust, TypeScript/JavaScript, and Python
   projects, detected from their manifests. Framework detection for React,
   Next.js, Vue, Svelte, and Vite; Cargo workspaces and Python virtualenvs
@@ -29,8 +35,13 @@ New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
 - **A documented health score** — three independently measurable
   sub-scores (dependencies, configuration, code organization), not an
   invented number. See [`docs/analysis.md`](docs/analysis.md).
-- **Rule-based recommendations** — grouped into Performance/Maintenance/
-  Security, each rule tied to one concrete, checkable fact.
+- **A fast incremental index** — `blink index` records every file's
+  hash/size/language/symbols and refreshes only what changed; it powers
+  instant `search`, `symbols`, `hotspots`, `timeline`, and `duplicates`.
+- **A workflow engine** — discover and run project commands (`tasks`/
+  `task`/`profile`), validate with the real toolchain (`check`), clean
+  caches (`clean`), manage `.env` (`env`), and prepare a fresh clone
+  (`setup`) — Blink orchestrates your tools, it never hides them.
 - **A live dev server and dashboard** — an async static file server with
   a debounced file watcher, plus an interactive `ratatui` terminal UI
   that refreshes automatically on file changes.
@@ -39,17 +50,20 @@ New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
 - **A real plugin system** — subprocess-based, `cargo`/`git`-style: any
   `blink-<name>` executable becomes `blink <name>`. No unsafe dynamic
   loading, no fake registry. See [`docs/plugins.md`](docs/plugins.md).
-- **Multiple export formats** — JSON, Markdown, and self-contained HTML
-  reports (`blink report`).
-- **Two build caches** — a project-local content-hash cache (`blink
-  build`) and a global per-user analysis cache that makes repeated
-  `analyze`/`deps`/`health`/`ci` runs against an unchanged project fast.
-  `blink benchmark` measures the real difference.
+- **Machine-readable everywhere** — `--json` on the report commands, plus
+  Markdown and self-contained HTML export (`blink report`) and shell
+  completions (`blink completions`).
+- **Caching that's measured, not claimed** — a project-local content-hash
+  build cache, a global per-user analysis cache, and the incremental
+  index all make repeat runs fast; `blink benchmark` measures the real
+  difference on your machine.
 
-See [`docs/architecture.md`](docs/architecture.md) for how the nine
-crates in this workspace fit together, [`docs/analysis.md`](docs/analysis.md)
-for exactly what the analyzer measures (and where it's a heuristic), and
-[`docs/roadmap.md`](docs/roadmap.md) for what's shipped versus planned.
+Configuration lives in `blink.toml` — or `.bnk`, the same schema under a
+signature name. See [`docs/architecture.md`](docs/architecture.md) for how
+the eleven crates fit together, [`docs/analysis.md`](docs/analysis.md) for
+exactly what each score measures, [`docs/FEATURE_AUDIT.md`](docs/FEATURE_AUDIT.md)
+for a per-command inventory, and [`docs/roadmap.md`](docs/roadmap.md) for
+what's shipped versus planned.
 
 ## Installation
 
@@ -148,71 +162,73 @@ Pass `--online` to additionally check for outdated packages (`--json` for
 machine-readable output). Every field is real and documented — see
 [`docs/analysis.md`](docs/analysis.md).
 
-### Every other command
+### Every command
+
+Run `blink --help` for the grouped overview, or `blink <command> --help`
+for any one. Full reference with every flag: [`docs/cli.md`](docs/cli.md).
+
+**Get started:** `init` · `scan` · `inspect` · `doctor` · `setup`
+**Understand:** `analyze` · `deps` · `health` · `recommend` · `optimize` · `security`
+**Index & search:** `index` · `status` · `search` · `symbols` · `hotspots` · `timeline`
+**Work in it:** `run` · `watch` · `build` · `tasks` · `task` · `profile` · `check` · `clean` · `env` · `ci`
+**Report:** `report` · `docs` · `duplicates` · `filesystem` · `config-audit` · `config check` · `dashboard` · `benchmark`
+**Extend:** `plugins` · `completions`
+
+A few highlights:
 
 | Command | Purpose |
 | --- | --- |
-| `blink init` | Create a `blink.toml`. |
-| `blink deps` | Dependency counts, largest packages, issues. |
-| `blink health` | Health score with sub-scores. |
-| `blink recommend` | Categorized, rule-based recommendations. |
-| `blink run` | Dev server + file watcher. |
-| `blink watch` | Analysis-only live reload (no dev server). |
-| `blink build` | Cache-aware file scan. |
-| `blink ci` | Analysis with pipeline exit codes. |
-| `blink security` | OSV.dev vulnerability check. |
-| `blink report` | Export JSON/Markdown/HTML. |
-| `blink plugins` | List/install plugins. |
-| `blink benchmark` | Measure Blink's own performance. |
-| `blink dashboard` | Interactive terminal UI. |
-
-Full reference with every flag: [`docs/cli.md`](docs/cli.md).
+| `blink inspect` | What is this project, how to run it, where to start. |
+| `blink optimize` | Rule-based 0–100 score with concrete suggestions. |
+| `blink doctor` | Check your environment can build the project. |
+| `blink search` / `symbols` | Instant indexed code search. |
+| `blink task <name>` | Run a discovered project command. |
+| `blink check` | Run the real local toolchain (fmt/lint/tests). |
+| `blink clean` | Remove regenerable caches (asks first). |
 
 ## Configuration
 
 ```toml
-# blink.toml
+# blink.toml — or name it .bnk (same schema, signature name)
 [project]
 name = "my-app"
 ignore = ["vendor"]
 
+[commands]           # discovered by `blink tasks`, run with `blink task <name>`
+dev = "npm run dev"
+test = "npm test"
+
 [server]
 port = 3000
-
-[optimization]
-cache = true
-analyze = true
 ```
 
-Full reference: [`docs/configuration.md`](docs/configuration.md).
+Full reference (all tables, and how `.bnk` relates to `blink.toml`):
+[`docs/configuration.md`](docs/configuration.md).
 
 ## Architecture
 
-```
-User → npm package (packages/blink-cli) → downloads binary → blink-cli
-                                                                  │
-        ┌──────────┬───────────┬─────────┬──────────┬───────────┼───────────┬────────────┐
-        ▼          ▼           ▼         ▼          ▼           ▼           ▼            ▼
-   blink-core  blink-      blink-cache blink-    blink-       blink-      blink-plugin  blink-dashboard
-   detection   analyzer    build +     server    report       parser      subprocess    ratatui TUI
-   + config    dependency  analysis    dev+watch formatting   manifest/   plugins
-               health      caching                            lockfile
-```
+Eleven crates in one Cargo workspace, plus the npm distribution package.
+`blink-parser` (formats) → `blink-core` (detection + config) →
+`blink-analyzer` (health) → `blink-report` (formatting) → `blink-cli`
+(commands), with `blink-cache` (caching), `blink-server` (dev server +
+watch), `blink-index` (incremental file/symbol index), `blink-workflow`
+(optimize/doctor/tasks/clean/env), `blink-plugin` (subprocess plugins),
+and `blink-dashboard` (TUI) alongside.
 
 Details, data flow, and the reasoning behind each design decision live in
 [`docs/architecture.md`](docs/architecture.md).
 
 ## Roadmap
 
-- **v0.1–v0.2 (shipped):** CLI, project detection, analyzer, dev server,
-  build caching, health score, JSON export.
-- **v0.3–v0.4 (shipped):** npm distribution, config ignore list, expanded
-  detection, `deps`/`health`/`recommend`/`watch`/`ci`/`security`/`report`
-  commands, a global analysis cache, a real plugin system, an interactive
-  dashboard.
-- **v0.5 (planned):** a real build/optimization pipeline — `blink build`
+- **v0.1–v0.4 (shipped):** CLI, project detection, analyzer, dev server,
+  build caching, health score, JSON export, npm distribution, a global
+  analysis cache, a real plugin system, and an interactive dashboard.
+- **v0.5 (shipped):** project intelligence (`inspect`/`optimize`/`doctor`),
+  an incremental index (`index`/`search`/`symbols`/`hotspots`), a workflow
+  engine (`tasks`/`task`/`check`/`clean`/`setup`/`env`), and `.bnk` config.
+- **v0.6 (planned):** a real build/optimization pipeline — `blink build`
   is currently cache bookkeeping, not a bundler.
-- **v0.6 (planned):** VS Code extension, a plugin registry.
+- **v0.7 (planned):** VS Code extension, a plugin registry, `self update`.
 
 Full detail in [`docs/roadmap.md`](docs/roadmap.md).
 

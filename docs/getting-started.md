@@ -20,19 +20,27 @@ Verify it worked:
 blink --version
 ```
 
-## Your first scan
+## Your first look
 
 From inside any Rust, TypeScript/JavaScript, or Python project:
 
 ```sh
 cd my-project
-blink scan
+blink inspect
 ```
 
-Blink reads your project's manifest (`Cargo.toml`, `package.json`,
-`requirements.txt`/`pyproject.toml`) and reports what it found — no
-configuration required, nothing installed or executed beyond reading
-files that are already there.
+`inspect` is the one command to run first: it tells you what the project
+is, how to run it, where its entry points are, and what tasks it defines —
+one screen, no configuration required, nothing installed or executed
+beyond reading files that are already there. (`blink scan` is the smaller,
+detection-only version if that's all you want.)
+
+Two more first-day commands:
+
+```sh
+blink doctor   # can my environment actually build this? (runtimes, tools)
+blink setup    # install dependencies and prepare a fresh clone (asks first)
+```
 
 ## Understand dependency health
 
@@ -51,6 +59,16 @@ offline). Add `--json` to get the same data as JSON for scripting:
 blink analyze --json | jq '.health.score'
 ```
 
+## Find your way around
+
+```sh
+blink optimize      # a scored, rule-based list of concrete improvements
+blink search Config # instant indexed search across the codebase
+blink symbols       # every function/type/class Blink found
+blink tasks         # the project's own commands, ready to run
+blink task test     # run one of them (mirrors its exit code)
+```
+
 ## Keep it running
 
 ```sh
@@ -59,13 +77,21 @@ blink run        # a local dev server + the same watching
 blink dashboard  # an interactive terminal view of the above
 ```
 
+## Configure it (optional)
+
+Drop a `blink.toml` — or `.bnk`, the same schema under a signature name —
+in your project root to name tasks, tune ignores, or define profiles.
+Validate it any time with `blink config check`. See
+[`docs/configuration.md`](configuration.md).
+
 ## Where to go next
 
 - [`docs/cli.md`](cli.md) — every command and flag.
-- [`docs/analysis.md`](analysis.md) — exactly what the analyzer measures,
+- [`docs/FEATURE_AUDIT.md`](FEATURE_AUDIT.md) — a per-command inventory.
+- [`docs/analysis.md`](analysis.md) — exactly what each score measures,
   including where it's a documented heuristic rather than a precise
   number.
-- [`docs/configuration.md`](configuration.md) — `blink.toml` reference.
+- [`docs/configuration.md`](configuration.md) — `blink.toml`/`.bnk` reference.
 - [`docs/plugins.md`](plugins.md) — extending Blink with your own
   subcommands.
 - [`docs/architecture.md`](architecture.md) — how the crates fit together,

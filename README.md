@@ -282,23 +282,13 @@ one project **context graph** (resolving the references between files);
 Details, data flow, and the reasoning behind each design decision live in
 [`docs/architecture.md`](docs/architecture.md).
 
-## Roadmap
+## Status
 
-- **v0.1–v0.4 (shipped):** CLI, project detection, analyzer, dev server,
-  build caching, health score, JSON export, npm distribution, a global
-  analysis cache, a real plugin system, and an interactive dashboard.
-- **v0.5 (shipped):** project intelligence (`inspect`/`optimize`/`doctor`),
-  an incremental index (`index`/`search`/`symbols`/`hotspots`), a workflow
-  engine (`tasks`/`task`/`check`/`clean`/`setup`/`env`), and `.bnk` config.
-- **v0.6 (shipped):** the **context engine** — a structured project context
-  graph (`blink-context`/`blink-query`/`blink-export`) with
-  `context`/`query`/`map`/`explain`/`export`, cross-file and cross-crate
-  reference resolution, and a `[context]` config section.
-- **Next:** a real build/optimization pipeline (`blink build` is currently
-  cache bookkeeping), a plugin registry, and a VS Code extension surfacing
-  the context graph inline.
-
-Full detail in [`docs/roadmap.md`](docs/roadmap.md).
+Blink is published as `@martin-k-m/blink` on npm and released via CI on
+each version tag. Through **v0.6** it covers project detection and
+dependency analysis, an incremental index, a workflow engine, and the
+context engine (`context` · `query` · `map` · `explain` · `export`). The
+full release history is in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Development
 

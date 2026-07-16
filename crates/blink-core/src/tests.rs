@@ -96,6 +96,101 @@ fn config_round_trips_through_toml() {
 }
 
 #[test]
+fn config_round_trips_with_new_tables() {
+    let dir = TempDir::new().unwrap();
+    let mut config = BlinkConfig::new("my-app");
+    config.project.r#type = Some("web".to_string());
+    config
+        .commands
+        .insert("dev".to_string(), "npm run dev".to_string());
+    config
+        .commands
+        .insert("build".to_string(), "npm run build".to_string());
+    config.index.auto_update = false;
+    config.report.format = Some("markdown".to_string());
+    config.profiles.insert(
+        "dev".to_string(),
+        crate::ProfileConfig {
+            commands: vec!["docker compose up".to_string(), "npm install".to_string()],
+        },
+    );
+
+    config.write(dir.path()).unwrap();
+    let loaded = BlinkConfig::load(dir.path()).unwrap();
+
+    assert_eq!(config, loaded);
+    assert_eq!(loaded.commands.get("dev").unwrap(), "npm run dev");
+    assert!(!loaded.index.auto_update);
+    assert!(loaded.index.enabled); // defaulted
+    assert_eq!(loaded.project.r#type.as_deref(), Some("web"));
+    assert_eq!(loaded.profiles["dev"].commands.len(), 2);
+}
+
+#[test]
+fn bnk_is_read_and_preferred_over_blink_toml() {
+    let dir = TempDir::new().unwrap();
+    // Same schema, two filenames. `.bnk` should win when both exist.
+    write(&dir, "blink.toml", "[project]\nname = \"from-toml\"\n");
+    write(&dir, ".bnk", "[project]\nname = \"from-bnk\"\n");
+
+    let loaded = BlinkConfig::load(dir.path()).unwrap();
+    assert_eq!(loaded.project.name, "from-bnk");
+
+    // Sanity: with only blink.toml present it's still read.
+    let toml_only = TempDir::new().unwrap();
+    write(
+        &toml_only,
+        "blink.toml",
+        "[project]\nname = \"only-toml\"\n",
+    );
+    assert_eq!(
+        BlinkConfig::load(toml_only.path()).unwrap().project.name,
+        "only-toml"
+    );
+}
+
+#[test]
+fn bnk_alone_is_a_valid_config_and_counts_as_existing() {
+    let dir = TempDir::new().unwrap();
+    assert!(!BlinkConfig::exists(dir.path()));
+    write(&dir, ".bnk", "[project]\nname = \"signature\"\n");
+    assert!(BlinkConfig::exists(dir.path()));
+    assert_eq!(
+        BlinkConfig::load(dir.path()).unwrap().project.name,
+        "signature"
+    );
+}
+
+#[test]
+fn extra_ignores_merges_project_and_scan_dedup() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        ".bnk",
+        "[project]\nname = \"x\"\nignore = [\"vendor\", \"tmp\"]\n\n[scan]\nignore = [\"tmp\", \"fixtures\"]\n",
+    );
+    let cfg = BlinkConfig::load(dir.path()).unwrap();
+    assert_eq!(cfg.extra_ignores(), vec!["vendor", "tmp", "fixtures"]);
+}
+
+#[test]
+fn bnk_ignore_excludes_directories_from_file_count() {
+    let dir = TempDir::new().unwrap();
+    write(&dir, "Cargo.toml", "[package]\nname = \"sample\"\n");
+    write(&dir, "src/main.rs", "fn main() {}");
+    write(&dir, "generated/a.rs", "// gen");
+    write(
+        &dir,
+        ".bnk",
+        "[scan]\nignore = [\"generated\"]\n[project]\nname = \"sample\"\n",
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+    // Cargo.toml, src/main.rs, .bnk — generated/a.rs excluded via [scan].ignore.
+    assert_eq!(project.file_count, 3);
+}
+
+#[test]
 fn config_exists_reports_presence() {
     let dir = TempDir::new().unwrap();
     assert!(!BlinkConfig::exists(dir.path()));

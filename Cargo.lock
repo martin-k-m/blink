@@ -208,6 +208,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "blink-index"
+version = "0.2.0"
+dependencies = [
+ "blink-core",
+ "hex",
+ "rayon",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror",
+ "walkdir",
+]
+
+[[package]]
 name = "blink-parser"
 version = "0.2.0"
 dependencies = [
@@ -246,6 +261,20 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "blink-workflow"
+version = "0.2.0"
+dependencies = [
+ "blink-analyzer",
+ "blink-core",
+ "blink-index",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "toml",
+ "walkdir",
 ]
 
 [[package]]

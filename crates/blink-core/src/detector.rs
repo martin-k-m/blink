@@ -31,7 +31,7 @@ pub const DEFAULT_IGNORED_DIRS: &[&str] = &[
 pub fn effective_ignored_dirs(root: &Path) -> Vec<String> {
     let mut dirs: Vec<String> = DEFAULT_IGNORED_DIRS.iter().map(|s| s.to_string()).collect();
     if let Ok(config) = BlinkConfig::load(root) {
-        for entry in config.project.ignore {
+        for entry in config.extra_ignores() {
             if !dirs.contains(&entry) {
                 dirs.push(entry);
             }

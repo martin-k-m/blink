@@ -1,0 +1,25 @@
+[package]
+name = "blink-workflow"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Workflow engine for Blink: optimization rules, environment doctor, task discovery, and cleanup planning."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+blink-core = { workspace = true }
+blink-index = { workspace = true }
+blink-analyzer = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

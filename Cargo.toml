@@ -28,6 +28,8 @@ members = [
     "crates/blink-report",
     "crates/blink-plugin",
     "crates/blink-dashboard",
+    "crates/blink-index",
+    "crates/blink-workflow",
 ]
 exclude = ["examples"]
 
@@ -53,6 +55,8 @@ blink-parser = { path = "crates/blink-parser", version = "0.2.0" }
 blink-report = { path = "crates/blink-report", version = "0.2.0" }
 blink-plugin = { path = "crates/blink-plugin", version = "0.2.0" }
 blink-dashboard = { path = "crates/blink-dashboard", version = "0.2.0" }
+blink-index = { path = "crates/blink-index", version = "0.2.0" }
+blink-workflow = { path = "crates/blink-workflow", version = "0.2.0" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "time", "signal", "sync"] }
 rayon = "1.10"

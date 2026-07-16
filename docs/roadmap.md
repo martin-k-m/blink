@@ -77,7 +77,44 @@ The "clone the repo to use it" → "install it like a real tool" milestone:
 - [x] `blink dashboard` — an interactive `ratatui` terminal UI with live,
       file-watcher-triggered refresh.
 
-## v0.5 — Blink Runtime (planned)
+## v0.5 — Project intelligence, indexing & workflow engine (shipped)
+
+The "Beyond v0.6" proposals (originally "phases 5–8") landed here, built
+on a new incremental index and a fact-driven workflow engine rather than
+by piling on shallow commands. Two new crates — `blink-index` and
+`blink-workflow` — plus 21 new subcommands:
+
+- [x] **Indexing** (`blink-index`): a per-project `.blink/index.json`
+      tracking each file's size/hash/mtime/language/lines/symbols. Refreshes
+      incrementally (only changed files re-hashed, rayon-parallel) and powers
+      `index`, `status`, `search`, `symbols`, `hotspots`, and the stats in
+      `inspect`/`docs`. Symbol extraction spans Rust/Python/TS/JS/Go.
+- [x] **Project intelligence**: `inspect` (what is this / how to run it /
+      where to start), `optimize` (rule-based score + suggestions),
+      `duplicates`, `doctor` (env/runtime diagnostics), `filesystem`,
+      `config-audit`, `docs`.
+- [x] **Daily workflow**: `tasks`/`task` (discovery + running across
+      package.json/Makefile/justfile/Cargo/`[commands]`), `profile`, `clean`,
+      `env`, `check` (real local toolchain), `setup`, `completions`.
+- [x] **`.bnk`** as a signature alternate filename for the exact
+      `blink.toml` schema, with new `[commands]`/`[index]`/`[profiles]`/
+      `[scan]`/`[report]`/`[plugins.*]` tables and a `blink config check`
+      validator.
+
+Collision resolutions from the original specs (see
+[`docs/planning/phase-5-8-vision.md`](planning/phase-5-8-vision.md)):
+`blink run` stayed the dev server (task-running is `blink task`); the two
+`doctor` specs were reconciled into one command; `check` runs the
+toolchain while `ci` keeps its exit-code contract; `.bnk` extends the
+existing config rather than introducing a parallel format.
+
+**Deferred, deliberately:** a real remote plugin *registry* and `self
+update` (both need standing infra / a published release to verify against,
+which doesn't exist yet — see the note below), and true partial
+incremental *analysis* (the index tracks per-file state, but `optimize`/
+`analyze` still recompute their whole result).
+
+## v0.6 — Blink Runtime (planned)
 
 This is where `blink build` stops being cache bookkeeping and starts being
 a real build tool:
@@ -90,37 +127,30 @@ a real build tool:
 - [ ] AST-aware unused-dependency detection, replacing the current
       substring scan (see the known limitation in `docs/analysis.md`).
 
-## v0.6 — Ecosystem (planned)
+## v0.7 — Ecosystem (planned)
 
 - [ ] VS Code extension surfacing scan/analyze results inline.
 - [ ] A plugin *registry* — `blink plugins install` currently only copies
       a local file; there's no `blink plugins install <name>` fetching
       from anywhere, because no registry exists yet.
+- [ ] `blink self update` — check the latest release, verify a checksum,
+      swap the binary. Needs a published release to build and verify
+      against (there isn't one yet), which is why it wasn't done in v0.5.
 - [ ] Suggestions that go beyond dependency hygiene (e.g. flagging likely
       dead code paths, once the AST-aware analysis above lands).
 
-## Beyond v0.6 — proposed, not started
+## The original "phase 5–8" proposals
 
-The project owner has written detailed proposals for several more
-phases: universal project intelligence + a workflow-optimization engine
-(`blink inspect`/`optimize`/`doctor`/`duplicates`/...), a daily-driver
-task runner and environment manager (`blink run` as a task runner,
-`setup`/`check`/`clean`/`env`/`update`/self-update/shell completion),
-a performance-focused indexing engine (`blink index`/`search`/`symbols`/
-`hotspots`), and a Blink-native project config file (proposed as `.bnk`,
-pending a naming-collision check against `blink.toml`/`.blink`, both of
-which are already taken by this project's own conventions).
-
-**None of this is implemented.** The full original specs, plus notes on
-where each proposal overlaps or conflicts with what's already shipped
-(e.g. `blink run` already means something different; `blink doctor` is
-specified twice with different scope; the proposed `.bnk` fallback names
-collide with existing `blink.toml`/`.blink/`), are preserved verbatim in
-[`docs/planning/phase-5-8-vision.md`](planning/phase-5-8-vision.md). Read
-that file — not just this summary — before starting any of it; it flags
-several design decisions (command-name collisions, config-file
-consolidation, in-process vs. subprocess plugin API) that need resolving
-deliberately rather than defaulting to whatever's easiest to type first.
+The universal-intelligence / workflow-engine / indexing / `.bnk`
+proposals the owner wrote (originally "phases 5–8") **shipped in v0.5
+above.** The full original specs, plus the inline notes on where each
+proposal overlapped or conflicted with already-shipped behavior, are
+preserved verbatim in
+[`docs/planning/phase-5-8-vision.md`](planning/phase-5-8-vision.md) for
+historical context — but that document describes the *proposal*, not the
+delivered result. For what actually shipped and how the flagged collisions
+were resolved, read the v0.5 section above; the two items intentionally
+left out (a real plugin registry and `self update`) are tracked under v0.7.
 
 ## A note on phase numbering
 

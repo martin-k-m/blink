@@ -13,10 +13,16 @@ repo from an empty skeleton (`README.md` + `LICENSE`) up through four
 shipped milestones (v0.1–v0.4). See `docs/roadmap.md` for what shipped in
 each and `docs/architecture.md` for how the nine crates fit together.
 
-**Current status:** v0.4 is merged to `main`. 105 tests passing,
-`cargo fmt`/`clippy -D warnings` clean, release build verified. **Nothing
-has been published** — no `npm publish`, no `git tag` pushed, so no
-GitHub Release exists yet and the npm package (`packages/blink-cli`) has
+**Current status:** v0.5 shipped the "phase 5–8" work on top of v0.4 — a
+new incremental index (`blink-index`), a fact-driven workflow engine
+(`blink-workflow`), and 21 new subcommands (`inspect`/`optimize`/`doctor`/
+`index`/`search`/`symbols`/`hotspots`/`timeline`/`tasks`/`task`/`clean`/
+`env`/`check`/`setup`/`completions`/`config check`/... ) plus `.bnk` as a
+signature alternate filename for the `blink.toml` schema. ~136 tests
+passing, `cargo fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s
+v0.5 section for what shipped and which spec collisions were resolved how.
+**Nothing has been published** — no `npm publish`, no `git tag` pushed, so
+no GitHub Release exists yet and the npm package (`packages/blink-cli`) has
 nothing real to download (it's been verified end-to-end against a
 *locally built* binary via `BLINK_LOCAL_BIN`, not a real release).
 
@@ -28,16 +34,16 @@ project itself built) against this repo's own dependency tree would be
 a reasonable first step, alongside checking Dependabot's actual advisory
 details.
 
-**Planned but explicitly not started:** the project owner has written
-detailed specs for several more phases (universal project intelligence,
-a daily-driver task runner, an indexing engine, a `.bnk` project config
-file). Full specs are preserved in
-[`docs/planning/phase-5-8-vision.md`](docs/planning/phase-5-8-vision.md);
-summary and status in `docs/roadmap.md`'s "Beyond v0.6" section. **Do not
-start implementing these without a fresh, explicit go-ahead** — the specs
-were pasted for context preservation, not as a current work order, and
-several of them collide with naming/scope already shipped (see the notes
-inline in that file).
+**The "phase 5–8" specs are now shipped (v0.5).** Universal project
+intelligence, the daily-driver task runner, the indexing engine, and the
+`.bnk` config file all landed — see `docs/roadmap.md`'s v0.5 section.
+`docs/planning/phase-5-8-vision.md` is preserved as *historical proposal*
+context (it describes the ask, not the delivered result; read the roadmap
+for what actually shipped and how the collisions were resolved). Two items
+were deliberately deferred and are tracked under v0.7: a real remote
+plugin *registry* and `blink self update` — both need a published release /
+standing infrastructure to build and verify against, which doesn't exist
+yet, so implementing them now would mean unverifiable code.
 
 ## Environment setup (this matters — read before running any cargo command)
 

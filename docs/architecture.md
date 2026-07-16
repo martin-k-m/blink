@@ -1,6 +1,6 @@
 # Architecture
 
-Blink is a Cargo workspace of nine crates, plus an npm package that
+Blink is a Cargo workspace of eleven crates, plus an npm package that
 distributes the compiled binary. Three low-level crates read and format
 data with no domain knowledge of "what a project is"; the rest build up
 from there. No crate depends on a "sibling" it doesn't need — `blink-cli`
@@ -135,6 +135,30 @@ by the same `Project`/`AnalysisReport` data every other command uses.
 Refreshes on a keypress or automatically via a background `FileWatcher`
 thread. Rendering is tested headlessly with `ratatui`'s `TestBackend`
 (no real terminal needed in CI).
+
+### `blink-index`
+
+The incremental project index that powers Blink's fast repeat commands. It
+records every file's size, SHA-256 hash, modification time, language, line
+count, and top-level symbols, persisted to `.blink/index.json`. A refresh
+re-hashes and re-parses only the files whose size *or* mtime changed
+(rayon-parallel) and reuses stored records for the rest, then answers
+`search`/`symbols`/`hotspots`/`status`/`inspect` queries from memory.
+Symbol extraction is a conservative, dependency-free line scanner covering
+Rust/Python/TypeScript/JavaScript/Go — it prefers to miss an oddly
+formatted declaration over inventing one, keeping with Blink's no-fabricated-
+output rule. Depends only on `blink-core` (for the shared ignore list).
+
+### `blink-workflow`
+
+The fact-driven workflow engine behind the Phase 5–6 commands: rule-based
+`optimize`, environment `doctor`, task discovery, `clean` planning, storage
+`filesystem` analysis, `.env` comparison, duplicate-file detection, and
+config auditing, plus a thin read-only `git` wrapper for `timeline`/
+`hotspots`. Every finding names the concrete condition that produced it,
+and nothing claims a speedup it did not measure. It reuses the heavy
+per-file work (hashes, symbols) from `blink-index` and dependency findings
+from `blink-analyzer` rather than recomputing them.
 
 ### `blink-cli`
 

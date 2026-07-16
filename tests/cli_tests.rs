@@ -434,7 +434,9 @@ fn symbols_json_finds_declared_symbol() {
 
     let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
     let arr = json.as_array().unwrap();
-    assert!(arr.iter().any(|s| s["name"] == "App" && s["kind"] == "struct"));
+    assert!(arr
+        .iter()
+        .any(|s| s["name"] == "App" && s["kind"] == "struct"));
 }
 
 #[test]

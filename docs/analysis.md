@@ -167,6 +167,59 @@ its "Analysis time" reflects the actual cache-lookup latency for that
 run — not the (possibly much larger) time the original, uncached run
 took. `blink benchmark` measures both explicitly.
 
+## The project index
+
+`blink index` builds a per-project index (`.blink/index.json`) recording,
+for every non-ignored file: its size, SHA-256 hash, modification time,
+language (by extension), line count, and top-level symbols. It's the
+foundation for `search`, `symbols`, `hotspots`, `status`, and the
+statistics in `inspect`/`docs`, and it exists so those commands don't
+re-scan and re-hash the whole tree every run.
+
+A **refresh** is incremental: a file whose size *and* mtime both match its
+stored record is left untouched; only changed, added, or removed files are
+re-hashed and re-parsed (in parallel via rayon). `blink index` reports the
+exact counts (`added`/`updated`/`removed`/`unchanged`) so the saving is
+visible, not asserted. `--rebuild` forces a full rebuild. This is distinct
+from the global analysis cache above: that caches a whole-project
+*analysis result* keyed by a content snapshot (any change invalidates all
+of it); the index tracks *per-file* state and updates only what changed.
+
+**Symbol extraction is a conservative line scanner, not a parser.** It
+finds top-level `fn`/`struct`/`enum`/`trait`/`class`/`interface`/`type`/
+`def`/`func` declarations by keyword and reads the following identifier,
+across Rust, Python, TypeScript, JavaScript, and Go. It doesn't understand
+scope, macros, or generics, and it deliberately errs toward *missing* an
+oddly formatted declaration rather than inventing one — so a reported
+symbol is always a real declaration, even though the list may not be
+exhaustive.
+
+`[index].enabled = false` in `blink.toml`/`.bnk` makes index-backed
+commands build a throwaway in-memory index instead of persisting one;
+`[index].auto_update = false` stops them refreshing/saving before they run.
+
+## The optimize score
+
+`blink optimize` reports a 0–100 score. The rule is deliberately simple
+and documented rather than precise: it starts at 100 and deducts a fixed
+**8 points per warning category**, clamped to `[0, 100]`. There are six
+categories, each `✓` (good) or `⚠` (warning) based on one concrete,
+measured condition:
+
+| Category          | Warns when                                                                 |
+| ----------------- | ---------------------------------------------------------------------------|
+| Dependencies      | the analyzer found unused, duplicate-versioned, or oversized packages.     |
+| Project Structure | some directory holds more than 300 files (heuristic; flagged for splitting). |
+| Duplicate Files   | the index found two or more byte-identical files.                          |
+| Tests             | no test files were detected (paths under `tests`/`__tests__`, or `*.test.*`/`*.spec.*`/`*_test.*`/`test_*` names — a heuristic). |
+| Documentation     | `README` or `CONTRIBUTING` is missing.                                     |
+| Configuration     | `.gitignore` or a CI configuration is missing.                             |
+
+The per-category findings and their suggestions are the substance; the
+score is an at-a-glance roll-up of them. **No build-speed improvement is
+ever claimed here**, because `optimize` measures none — it reports
+conditions, not benchmarks.
+
 ## JSON export (`--json`)
 
 ```json

@@ -138,6 +138,153 @@ project's health, stats, and issues, refreshing automatically when a
 watched file changes. Keys: `r` refresh, `o` toggle online checks, `q` or
 `Esc` quit.
 
+## Project intelligence
+
+These commands build on a fast, incremental on-disk index
+(`.blink/index.json`) — see [`docs/analysis.md`](analysis.md#the-project-index).
+Report commands support `--json`.
+
+### `blink inspect [path] [--json]`
+
+A one-screen answer to "I just cloned this — what is it and how do I run
+it?": language/framework/package manager, measured file/line/symbol
+counts and size, the natural run command, conventional entry-point files,
+discovered tasks, and a Git snapshot. Everything shown is measured or
+detected, never guessed.
+
+### `blink optimize [path] [--json]`
+
+A rule-based optimization report with a 0–100 score and concrete
+suggestions. Each category (Dependencies, Project Structure, Duplicate
+Files, Tests, Documentation, Configuration) is `✓`/`⚠` based on a specific
+measured condition. The score deducts a fixed amount per warning; the
+per-category findings are the substance. See
+[`docs/analysis.md`](analysis.md#the-optimize-score). No build-speed
+improvement is ever claimed, because none is measured here.
+
+### `blink duplicates [path] [--json]`
+
+Finds files with byte-for-byte identical contents (matched by SHA-256 via
+the index) and reports how much space consolidating each group would
+reclaim. Empty files are ignored.
+
+### `blink doctor [path] [--json]`
+
+Checks that this project can actually be developed here: required runtimes
+and package managers on `PATH`, Git, Docker (only if a compose file is
+present), and any environment-variable **names** declared in
+`.env.example` but missing from `.env`. Never prints a variable's value.
+`✓` present · `⚠` optional missing · `❌` required missing.
+
+### `blink filesystem [path] [--json]`
+
+Shows where the repository's bytes live: total size, how much is
+regenerable (build output, dependencies, caches) versus source, and a
+per-top-level-entry breakdown.
+
+### `blink config-audit [path] [--json]`
+
+Checks which standard project-config files are present (README, LICENSE,
+CONTRIBUTING, `.gitignore`, `.editorconfig`, CI configuration). Presence
+only — it doesn't judge contents.
+
+### `blink docs [path] [--output <file>]`
+
+Generates a Markdown project summary from measured facts (overview,
+statistics, language breakdown, discovered tasks), with the generated
+section clearly marked for review. Writes to stdout, or to `--output`.
+
+## Indexing
+
+### `blink index [path] [--rebuild]`
+
+Builds or incrementally refreshes the index. A refresh re-hashes and
+re-parses only files whose size or modification time changed and reuses
+stored records for the rest; `--rebuild` forces a full rebuild.
+
+### `blink status [path] [--json]`
+
+Reports index state: file/symbol/line counts, on-disk size, and a
+per-language breakdown — or that the project isn't indexed yet.
+
+### `blink search <query> [path] [--symbols] [--json]`
+
+Searches indexed file paths for `query` (case-insensitive), or symbol
+names with `--symbols`.
+
+### `blink symbols [path] [--filter <text>] [--json]`
+
+Lists discovered top-level symbols (functions, structs, enums, traits,
+classes, interfaces, type aliases) across Rust, Python, TypeScript,
+JavaScript, and Go, optionally filtered by name.
+
+### `blink hotspots [path] [--limit <N>] [--json]`
+
+Shows the largest files (from the index) and the most-frequently-changed
+files (from local Git history) — a maintenance-risk view.
+
+### `blink timeline [path] [--limit <N>]`
+
+Recent development activity from local Git history: commit count, recently
+changed files, and recent commit subjects.
+
+## Daily workflow
+
+### `blink tasks [path] [--json]`
+
+Lists tasks discovered from `[commands]` in blink.toml/.bnk, `package.json`
+scripts, `Makefile` targets, `justfile` recipes, and Cargo aliases —
+showing the underlying command and its source so nothing is hidden.
+
+### `blink task <name> [path] [--dry-run]`
+
+Runs a discovered task by name, mirroring its exit code (so `blink task
+test` works in CI). `[commands]` entries take precedence over same-named
+tasks from other sources. `--dry-run` prints the command without running it.
+
+### `blink profile <name> [path] [--dry-run]`
+
+Runs a `[profiles.<name>]` command sequence in order, stopping on the
+first non-zero exit.
+
+### `blink clean [path] [--dry-run] [--all] [--yes]`
+
+Removes regenerable cache/build directories, showing sizes first and
+asking before deleting. By default it leaves "heavy" artifacts (`target`,
+`node_modules`, virtualenvs) that cost a reinstall/recompile — `--all`
+includes them. `--dry-run` shows the plan without deleting; `--yes` skips
+the prompt.
+
+### `blink env [path] [--json]`
+
+Compares `.env` against `.env.example`, reporting configured / missing /
+unused variable **names** only — never values.
+
+### `blink check [path]`
+
+Runs the project's real local checks and exits non-zero if any fail: for
+Rust, `cargo fmt --check`, `cargo clippy -D warnings`, and `cargo test`;
+for Node, the project's own lint/test scripts; for Python, `ruff`/`pytest`
+when available. Complements `blink ci` (which is about analysis exit
+codes, not running your toolchain).
+
+### `blink setup [path] [--yes]`
+
+Prepares a freshly cloned project: copies `.env.example` to `.env` when
+missing and installs dependencies with the detected package manager. Shows
+the plan and asks first unless `--yes` is given.
+
+### `blink completions <shell>`
+
+Prints a shell completion script for `bash`, `zsh`, `fish`, `powershell`,
+or `elvish` to stdout. Redirect it into the location your shell loads
+completions from.
+
+### `blink config check [path]`
+
+Validates the project's `blink.toml`/`.bnk` and reports issues (e.g. a
+profile with no commands). See [`docs/configuration.md`](configuration.md).
+
 ## Global
 
 - `blink --help` / `blink <command> --help` — full flag reference for any

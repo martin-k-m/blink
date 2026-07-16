@@ -2,9 +2,6 @@
 
 npm distribution for Blink, a Rust-powered developer acceleration toolkit.
 
-> **Early alpha (v0.1.0).** Usable and tested, but young — expect breaking
-> changes before 1.0.
-
 ```sh
 npm install -g @martin-k-m/blink
 blink --version

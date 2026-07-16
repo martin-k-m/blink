@@ -10,6 +10,13 @@ Released on npm as `@martin-k-m/blink` and as GitHub releases with
 cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
 development milestones (merged to `main`, never tagged individually).
 
+## [0.5.3] — 2026-07-16
+
+Also publishes to the GitHub Packages registry (via the built-in
+`GITHUB_TOKEN`) so the package shows in the repo's "Packages" sidebar.
+npmjs.org (`@martin-k-m/blink`) remains the real install source — GitHub
+Packages requires auth to install. No functional changes to the tool.
+
 ## [0.5.2] — 2026-07-16
 
 Fixes automated npm publishing. The npm publish now runs as a job *inside*

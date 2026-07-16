@@ -46,6 +46,56 @@ pub enum Command {
     Benchmark(BenchmarkArgs),
     /// Open an interactive terminal dashboard for the project.
     Dashboard(DashboardArgs),
+
+    // --- Phase 5: universal project intelligence ---
+    /// One-screen overview: what this project is, how to run it, where to start.
+    Inspect(InspectArgs),
+    /// Rule-based optimization report with a score and concrete suggestions.
+    Optimize(FormatArgs),
+    /// Find files with identical contents (wasted space).
+    Duplicates(FormatArgs),
+    /// Check that this project can be developed here (runtimes, tools, env vars).
+    Doctor(FormatArgs),
+    /// Show where the repository's bytes live (source vs. regenerable weight).
+    Filesystem(FormatArgs),
+    /// Audit which standard project-config files are present.
+    ConfigAudit(FormatArgs),
+    /// Generate a Markdown project summary from measured facts.
+    Docs(DocsArgs),
+
+    // --- Phase 7: intelligent project indexing ---
+    /// Build or incrementally refresh the on-disk project index.
+    Index(IndexArgs),
+    /// Show index status: files, symbols, size, last update.
+    Status(FormatArgs),
+    /// Search indexed file paths (or symbols with --symbols).
+    Search(SearchArgs),
+    /// List indexed symbols (functions, types, ...), optionally filtered.
+    Symbols(SymbolsArgs),
+    /// Show the largest and most-frequently-changed files.
+    Hotspots(HotspotsArgs),
+    /// Show recent development activity from local Git history.
+    Timeline(TimelineArgs),
+
+    // --- Phase 6/8: daily workflow engine ---
+    /// List tasks discovered from package.json, Makefile, justfile, Cargo, config.
+    Tasks(FormatArgs),
+    /// Run a discovered task by name (see `blink tasks`).
+    Task(TaskArgs),
+    /// Run a named command sequence from `[profiles]` in blink.toml/.bnk.
+    Profile(ProfileArgs),
+    /// Remove regenerable cache/build directories (asks first).
+    Clean(CleanArgs),
+    /// Compare `.env` against `.env.example` (variable names only).
+    Env(FormatArgs),
+    /// Run the project's real local checks (format, lint, tests).
+    Check(CheckArgs),
+    /// Detect and install the project's dependencies (asks first).
+    Setup(SetupArgs),
+    /// Generate a shell completion script (bash, zsh, fish, powershell, elvish).
+    Completions(CompletionsArgs),
+    /// Work with Blink's own configuration (`blink config check`).
+    Config(ConfigArgs),
 }
 
 #[derive(Args)]
@@ -211,6 +261,199 @@ pub struct BenchmarkArgs {
     /// time. Reported as the minimum of these runs.
     #[arg(long, default_value_t = 3)]
     pub runs: usize,
+}
+
+/// Shared args for commands that take only a directory and a `--json` flag.
+#[derive(Args)]
+pub struct FormatArgs {
+    /// Directory to operate on.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Print machine-readable JSON instead of formatted terminal output.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct InspectArgs {
+    /// Directory to inspect.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Print machine-readable JSON instead of formatted terminal output.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct DocsArgs {
+    /// Directory to document.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Write the generated Markdown to this file instead of stdout.
+    #[arg(short, long)]
+    pub output: Option<PathBuf>,
+}
+
+#[derive(Args)]
+pub struct IndexArgs {
+    /// Directory to index.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Rebuild the index from scratch instead of incrementally refreshing.
+    #[arg(long)]
+    pub rebuild: bool,
+}
+
+#[derive(Args)]
+pub struct SearchArgs {
+    /// Text to search for (matched case-insensitively).
+    pub query: String,
+
+    /// Directory to search.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Search symbol names instead of file paths.
+    #[arg(long)]
+    pub symbols: bool,
+
+    /// Print machine-readable JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct SymbolsArgs {
+    /// Directory to read symbols from.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Only show symbols whose name contains this text (case-insensitive).
+    #[arg(long)]
+    pub filter: Option<String>,
+
+    /// Print machine-readable JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct HotspotsArgs {
+    /// Directory to analyze.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// How many entries to show in each list.
+    #[arg(long, default_value_t = 10)]
+    pub limit: usize,
+
+    /// Print machine-readable JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct TimelineArgs {
+    /// Directory to analyze.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// How many recent items to show.
+    #[arg(long, default_value_t = 15)]
+    pub limit: usize,
+}
+
+#[derive(Args)]
+pub struct TaskArgs {
+    /// Name of the task to run (see `blink tasks`).
+    pub name: String,
+
+    /// Project directory.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Print the command that would run without executing it.
+    #[arg(long)]
+    pub dry_run: bool,
+}
+
+#[derive(Args)]
+pub struct ProfileArgs {
+    /// Name of the profile to run (see `[profiles]` in blink.toml/.bnk).
+    pub name: String,
+
+    /// Project directory.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Print the commands that would run without executing them.
+    #[arg(long)]
+    pub dry_run: bool,
+}
+
+#[derive(Args)]
+pub struct CleanArgs {
+    /// Project directory.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Show what would be removed without deleting anything.
+    #[arg(long)]
+    pub dry_run: bool,
+
+    /// Also remove heavy artifacts that need a reinstall/recompile to restore
+    /// (`target`, `node_modules`, virtualenvs).
+    #[arg(long)]
+    pub all: bool,
+
+    /// Skip the confirmation prompt.
+    #[arg(short = 'y', long)]
+    pub yes: bool,
+}
+
+#[derive(Args)]
+pub struct CheckArgs {
+    /// Project directory.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+}
+
+#[derive(Args)]
+pub struct SetupArgs {
+    /// Project directory.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Run the setup steps without asking for confirmation.
+    #[arg(short = 'y', long)]
+    pub yes: bool,
+}
+
+#[derive(Args)]
+pub struct CompletionsArgs {
+    /// Shell to generate a completion script for.
+    #[arg(value_enum)]
+    pub shell: clap_complete::Shell,
+}
+
+#[derive(Args)]
+pub struct ConfigArgs {
+    #[command(subcommand)]
+    pub action: ConfigAction,
+}
+
+#[derive(Subcommand)]
+pub enum ConfigAction {
+    /// Validate the project's blink.toml/.bnk and report issues.
+    Check {
+        /// Project directory.
+        #[arg(default_value = ".")]
+        path: PathBuf,
+    },
 }
 
 #[derive(Subcommand)]

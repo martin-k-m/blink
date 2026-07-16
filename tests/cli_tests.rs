@@ -335,6 +335,219 @@ fn unknown_subcommand_falls_back_to_an_installed_plugin() {
         .stdout(predicate::str::contains("blink "));
 }
 
+/// A throwaway Rust project on disk, so index-writing commands (which persist
+/// `.blink/index.json`) don't pollute the shared `examples/` fixtures.
+fn rust_temp() -> tempfile::TempDir {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(
+        dir.path().join("Cargo.toml"),
+        "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+    )
+    .unwrap();
+    std::fs::create_dir_all(dir.path().join("src")).unwrap();
+    std::fs::write(
+        dir.path().join("src/main.rs"),
+        "fn main() { println!(\"hi\"); }\nstruct App;\n",
+    )
+    .unwrap();
+    std::fs::write(dir.path().join("README.md"), "# demo\n").unwrap();
+    std::fs::write(dir.path().join(".gitignore"), "/target\n").unwrap();
+    dir
+}
+
+#[test]
+fn index_then_status_reports_files_and_symbols() {
+    let dir = rust_temp();
+
+    blink()
+        .arg("index")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Files indexed"))
+        .stdout(predicate::str::contains("Symbols"));
+
+    assert!(dir.path().join(".blink").join("index.json").is_file());
+
+    blink()
+        .arg("status")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("indexed"))
+        .stdout(predicate::str::contains("Rust"));
+}
+
+#[test]
+fn inspect_json_reports_measured_project_facts() {
+    let dir = rust_temp();
+    let output = blink()
+        .arg("inspect")
+        .arg(dir.path())
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert_eq!(json["name"], "demo");
+    assert_eq!(json["language"], "Rust");
+    assert!(json["files"].as_u64().unwrap() >= 2);
+    assert!(json["symbols"].as_u64().unwrap() >= 2);
+    assert_eq!(json["run_command"], "cargo run");
+}
+
+#[test]
+fn optimize_json_scores_and_lists_checks() {
+    let dir = rust_temp();
+    let output = blink()
+        .arg("optimize")
+        .arg(dir.path())
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert!(json["score"].as_u64().unwrap() <= 100);
+    assert!(json["checks"].as_array().unwrap().len() >= 6);
+}
+
+#[test]
+fn symbols_json_finds_declared_symbol() {
+    let dir = rust_temp();
+    let output = blink()
+        .arg("symbols")
+        .arg(dir.path())
+        .arg("--filter")
+        .arg("App")
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    let arr = json.as_array().unwrap();
+    assert!(arr.iter().any(|s| s["name"] == "App" && s["kind"] == "struct"));
+}
+
+#[test]
+fn duplicates_detects_identical_files() {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(dir.path().join("Cargo.toml"), "[package]\nname=\"d\"\n").unwrap();
+    std::fs::write(dir.path().join("a.txt"), "same bytes here").unwrap();
+    std::fs::write(dir.path().join("b.txt"), "same bytes here").unwrap();
+
+    blink()
+        .arg("duplicates")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("reclaimable"));
+}
+
+#[test]
+fn doctor_reports_environment_checks() {
+    blink()
+        .arg("doctor")
+        .arg(fixture("rust-crate"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Blink Doctor"))
+        .stdout(predicate::str::contains("cargo"));
+}
+
+#[test]
+fn config_audit_lists_standard_files() {
+    blink()
+        .arg("config-audit")
+        .arg(fixture("rust-crate"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Configuration Audit"))
+        .stdout(predicate::str::contains("README"));
+}
+
+#[test]
+fn tasks_and_config_check_read_bnk_signature_file() {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(dir.path().join("Cargo.toml"), "[package]\nname=\"d\"\n").unwrap();
+    std::fs::write(
+        dir.path().join(".bnk"),
+        "[project]\nname = \"d\"\n[commands]\ngreet = \"echo hi\"\n",
+    )
+    .unwrap();
+
+    blink()
+        .arg("tasks")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("greet"));
+
+    blink()
+        .arg("config")
+        .arg("check")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(".bnk is valid"));
+}
+
+#[test]
+fn task_runs_a_discovered_command() {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(dir.path().join("Cargo.toml"), "[package]\nname=\"d\"\n").unwrap();
+    std::fs::write(
+        dir.path().join(".bnk"),
+        "[project]\nname = \"d\"\n[commands]\ngreet = \"echo blink-task-ran\"\n",
+    )
+    .unwrap();
+
+    blink()
+        .arg("task")
+        .arg("greet")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("blink-task-ran"));
+}
+
+#[test]
+fn clean_dry_run_reports_without_deleting() {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(dir.path().join("Cargo.toml"), "[package]\nname=\"d\"\n").unwrap();
+    std::fs::create_dir_all(dir.path().join("dist")).unwrap();
+    std::fs::write(dir.path().join("dist/bundle.js"), "x").unwrap();
+
+    blink()
+        .arg("clean")
+        .arg(dir.path())
+        .arg("--dry-run")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("dry run"));
+
+    // Nothing was deleted.
+    assert!(dir.path().join("dist").is_dir());
+}
+
+#[test]
+fn completions_generates_a_shell_script() {
+    blink()
+        .arg("completions")
+        .arg("bash")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("blink"));
+}
+
 #[test]
 fn build_creates_and_reuses_cache() {
     let dir = tempfile::TempDir::new().unwrap();

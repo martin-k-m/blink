@@ -22,7 +22,7 @@ pub enum TaskSource {
 impl fmt::Display for TaskSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            TaskSource::BlinkConfig => "blink.toml",
+            TaskSource::BlinkConfig => "blink config",
             TaskSource::PackageJson => "package.json",
             TaskSource::Makefile => "Makefile",
             TaskSource::Justfile => "justfile",

@@ -133,3 +133,31 @@ jobs:
         working-directory: packages/blink-cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Also publish to the GitHub Packages registry, purely so the package shows
+  # in the repo's "Packages" sidebar. Uses the built-in GITHUB_TOKEN — no extra
+  # secret. NOTE: installing from GitHub Packages requires authentication even
+  # for public packages, so npmjs.org (@martin-k-m/blink) stays the real
+  # `npm install` source; this copy is for repo visibility. Independent of the
+  # npm job (both need: release) so one failing doesn't block the other.
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: "@martin-k-m"
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        working-directory: packages/blink-cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

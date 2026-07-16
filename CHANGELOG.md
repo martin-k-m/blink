@@ -6,10 +6,16 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Versioning
 
-**`0.5.0` is the first tagged, published release** — on npm as
-`@martin-k-m/blink` and as GitHub release `v0.5.0` with cross-platform
-binaries. Earlier `v0.1`–`v0.4` entries below are development milestones
-that were merged to `main` but never tagged or published individually.
+Released on npm as `@martin-k-m/blink` and as GitHub releases with
+cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
+development milestones (merged to `main`, never tagged individually).
+
+## [0.5.1] — 2026-07-16
+
+First fully-automated release: pushing the `v0.5.1` tag builds the binaries
+and publishes to npm via CI, with **provenance** (a signed attestation
+linking the package to this repo/commit/workflow). No functional changes to
+the tool since `0.5.0`.
 
 ## [0.5.0] — 2026-07-16
 

@@ -120,7 +120,7 @@ checksum = "b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da"
 
 [[package]]
 name = "blink"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "assert_cmd",
  "blink-analyzer",
@@ -133,7 +133,7 @@ dependencies = [
 
 [[package]]
 name = "blink-analyzer"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blink-core",
  "blink-parser",
@@ -147,7 +147,7 @@ dependencies = [
 
 [[package]]
 name = "blink-cache"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex",
  "rayon",
@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "blink-cli"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -187,7 +187,7 @@ dependencies = [
 
 [[package]]
 name = "blink-core"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blink-parser",
  "serde",
@@ -199,7 +199,7 @@ dependencies = [
 
 [[package]]
 name = "blink-dashboard"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "blink-analyzer",
@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "blink-index"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blink-core",
  "hex",
@@ -227,7 +227,7 @@ dependencies = [
 
 [[package]]
 name = "blink-parser"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -237,7 +237,7 @@ dependencies = [
 
 [[package]]
 name = "blink-plugin"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "tempfile",
  "thiserror",
@@ -245,7 +245,7 @@ dependencies = [
 
 [[package]]
 name = "blink-report"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blink-analyzer",
  "blink-core",
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "blink-server"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "notify",
  "notify-debouncer-mini",
@@ -268,7 +268,7 @@ dependencies = [
 
 [[package]]
 name = "blink-workflow"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blink-analyzer",
  "blink-core",

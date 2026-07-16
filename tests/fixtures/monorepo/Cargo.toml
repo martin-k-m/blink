@@ -1,0 +1,5 @@
+# A minimal Cargo workspace fixture: two member crates, one depending on the
+# other. Used to exercise workspace detection and multi-package awareness.
+[workspace]
+resolver = "2"
+members = ["crates/app", "crates/lib"]

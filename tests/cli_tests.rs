@@ -550,6 +550,67 @@ fn completions_generates_a_shell_script() {
         .stdout(predicate::str::contains("blink"));
 }
 
+/// Recursively copy `src` into `dst` (created if needed), for tests that run
+/// index-writing commands against a committed fixture without dirtying it.
+fn copy_dir(src: &std::path::Path, dst: &std::path::Path) {
+    std::fs::create_dir_all(dst).unwrap();
+    for entry in std::fs::read_dir(src).unwrap() {
+        let entry = entry.unwrap();
+        let target = dst.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_dir(&entry.path(), &target);
+        } else {
+            std::fs::copy(entry.path(), &target).unwrap();
+        }
+    }
+}
+
+#[test]
+fn tasks_discovers_node_project_scripts() {
+    blink()
+        .arg("tasks")
+        .arg(tests_fixture("node_project"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("dev"))
+        .stdout(predicate::str::contains("build"))
+        .stdout(predicate::str::contains("package.json"));
+}
+
+#[test]
+fn inspect_detects_workspace_in_monorepo() {
+    let dir = tempfile::TempDir::new().unwrap();
+    copy_dir(&tests_fixture("monorepo"), dir.path());
+
+    let output = blink()
+        .arg("inspect")
+        .arg(dir.path())
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert_eq!(json["is_workspace"], true);
+    assert_eq!(json["language"], "Rust");
+    // The workspace's member sources are indexed (app + lib each have one).
+    assert!(json["files"].as_u64().unwrap() >= 4);
+}
+
+#[test]
+fn unknown_project_error_explains_and_suggests_fixes() {
+    let dir = tempfile::TempDir::new().unwrap();
+    blink()
+        .arg("analyze")
+        .arg(dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("couldn't find a project"))
+        .stderr(predicate::str::contains("Possible fixes"));
+}
+
 #[test]
 fn build_creates_and_reuses_cache() {
     let dir = tempfile::TempDir::new().unwrap();

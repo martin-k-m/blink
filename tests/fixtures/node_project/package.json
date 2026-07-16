@@ -1,0 +1,18 @@
+{
+  "name": "node-project-fixture",
+  "version": "1.0.0",
+  "description": "A plain Node.js project fixture for exercising task discovery and detection.",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "build": "echo \"no build step\"",
+    "test": "node --test",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}

@@ -30,33 +30,39 @@ members = [
     "crates/blink-dashboard",
     "crates/blink-index",
     "crates/blink-workflow",
+    "crates/blink-context",
+    "crates/blink-query",
+    "crates/blink-export",
 ]
 exclude = ["examples"]
 
 [workspace.package]
-version = "0.5.3"
+version = "0.6.0"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Blink Contributors"]
 license = "Apache-2.0"
 repository = "https://github.com/martin-k-m/blink"
 homepage = "https://github.com/martin-k-m/blink"
-description = "A Rust-powered developer acceleration toolkit."
+description = "A Rust-powered developer context engine — reliable, local understanding of any codebase, for humans and their tools."
 readme = "README.md"
-keywords = ["cli", "devtools", "build-tool", "dev-server", "watcher"]
+keywords = ["cli", "devtools", "code-intelligence", "context-engine", "developer-tools"]
 categories = ["command-line-utilities", "development-tools"]
 
 [workspace.dependencies]
-blink-core = { path = "crates/blink-core", version = "0.5.3" }
-blink-analyzer = { path = "crates/blink-analyzer", version = "0.5.3" }
-blink-cache = { path = "crates/blink-cache", version = "0.5.3" }
-blink-server = { path = "crates/blink-server", version = "0.5.3" }
-blink-parser = { path = "crates/blink-parser", version = "0.5.3" }
-blink-report = { path = "crates/blink-report", version = "0.5.3" }
-blink-plugin = { path = "crates/blink-plugin", version = "0.5.3" }
-blink-dashboard = { path = "crates/blink-dashboard", version = "0.5.3" }
-blink-index = { path = "crates/blink-index", version = "0.5.3" }
-blink-workflow = { path = "crates/blink-workflow", version = "0.5.3" }
+blink-core = { path = "crates/blink-core", version = "0.6.0" }
+blink-analyzer = { path = "crates/blink-analyzer", version = "0.6.0" }
+blink-cache = { path = "crates/blink-cache", version = "0.6.0" }
+blink-server = { path = "crates/blink-server", version = "0.6.0" }
+blink-parser = { path = "crates/blink-parser", version = "0.6.0" }
+blink-report = { path = "crates/blink-report", version = "0.6.0" }
+blink-plugin = { path = "crates/blink-plugin", version = "0.6.0" }
+blink-dashboard = { path = "crates/blink-dashboard", version = "0.6.0" }
+blink-index = { path = "crates/blink-index", version = "0.6.0" }
+blink-workflow = { path = "crates/blink-workflow", version = "0.6.0" }
+blink-context = { path = "crates/blink-context", version = "0.6.0" }
+blink-query = { path = "crates/blink-query", version = "0.6.0" }
+blink-export = { path = "crates/blink-export", version = "0.6.0" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "time", "signal", "sync"] }
 rayon = "1.10"

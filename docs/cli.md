@@ -138,6 +138,56 @@ project's health, stats, and issues, refreshing automatically when a
 watched file changes. Keys: `r` refresh, `o` toggle online checks, `q` or
 `Esc` quit.
 
+## Context engine
+
+Blink's context layer builds a single, serializable **context graph** of
+the project — its identity, stats, areas, dependencies, commands, files and
+symbols, and the file→file references between them — and answers questions
+against that model. It's built on the same incremental index as the
+commands below; everything it shows is measured or resolved from real
+project files, never invented. References are resolved conservatively
+(TS/JS relative imports, Python imports, Rust `mod` declarations, and
+cross-crate `<crate>::` references inside a Cargo workspace); an import
+that can't be matched to a real project file is never turned into an edge.
+See [`docs/context-engine.md`](context-engine.md) for the full model.
+
+### `blink context [path] [--json]`
+
+Builds the context graph and prints an understanding report: project
+identity, stats, the most important areas (ranked by symbol count), and the
+project's commands. `--json` emits the full graph.
+
+### `blink query <query> [path] [--limit <N>] [--json]`
+
+Deterministic, local structured search over the context graph. The query
+is tokenized (camelCase split, stop/question words like "where"/"is"/"the"
+dropped) and areas, files, symbols, dependencies, and commands are ranked
+by name match, returned grouped. This is lexical search over the local
+model — not AI, no inference. `--limit` caps results per group (default
+`10`); `--json` emits structured results.
+
+### `blink explain <file> [path] [--json]`
+
+Explains one project-relative file using only real signals: the file's own
+leading doc comment (verbatim), the top-level symbols it declares, the
+project files it imports, the external packages it imports, and the project
+files that import it. Nothing is inferred — there are no invented
+"responsibilities."
+
+### `blink map [path] [--format terminal|markdown|json|graph]`
+
+An architecture view of the project: areas ranked by symbol count and the
+area→area dependency edges derived from resolved references. `--format`
+selects `terminal` (default), `markdown`, `json`, or `graph` (a Mermaid
+architecture graph).
+
+### `blink export [path] [--format json|yaml|markdown|graph] [--output <file>]`
+
+Exports the full context graph. `--format` selects `json` (default),
+`yaml`, `markdown`, or `graph` (Mermaid). Writes to stdout by default;
+`--output <file>` writes a file instead. Conventional filenames are
+`blink-context.json` / `.yaml` / `.md` / `.mmd`.
+
 ## Project intelligence
 
 These commands build on a fast, incremental on-disk index

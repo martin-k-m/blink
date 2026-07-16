@@ -41,6 +41,10 @@ pub struct BlinkConfig {
     pub commands: BTreeMap<String, String>,
     #[serde(default)]
     pub index: IndexConfig,
+    /// Context-engine tuning: whether context commands are enabled and which
+    /// path roots the context graph covers. See [`ContextConfig`].
+    #[serde(default)]
+    pub context: ContextConfig,
     #[serde(default)]
     pub report: ReportConfig,
     /// Named groups of commands run in sequence via `blink profile <name>`.
@@ -117,6 +121,28 @@ impl Default for IndexConfig {
     }
 }
 
+/// `[context]` — configures Blink's context engine (`context`/`query`/
+/// `explain`/`map`/`export`).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct ContextConfig {
+    /// Whether context commands may run. Defaults true.
+    pub enabled: bool,
+    /// Path roots (project-relative) the context graph is limited to. Empty
+    /// (the default) means the whole project. A root matches on a path-segment
+    /// boundary, so `"src"` covers `src/main.rs` but not `srcgen/x.rs`.
+    pub include: Vec<String>,
+}
+
+impl Default for ContextConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            include: Vec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default)]
 pub struct ReportConfig {
@@ -145,6 +171,7 @@ impl BlinkConfig {
             scan: ScanConfig::default(),
             commands: BTreeMap::new(),
             index: IndexConfig::default(),
+            context: ContextConfig::default(),
             report: ReportConfig::default(),
             profiles: BTreeMap::new(),
             plugins: BTreeMap::new(),

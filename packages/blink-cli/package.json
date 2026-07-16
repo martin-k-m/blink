@@ -1,10 +1,10 @@
 {
   "name": "@martin-k-m/blink",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "publishConfig": {
     "access": "public"
   },
-  "description": "Understand and optimize any project — fast. Rust-powered developer toolkit: project intelligence, an incremental code index, and a workflow engine. This package downloads the native `blink` binary for your platform on install.",
+  "description": "The context layer for modern software development. A Rust-powered developer context engine that builds reliable, local understanding of any codebase — for humans and their tools. This package downloads the native `blink` binary for your platform on install.",
   "author": "martin-k-m",
   "license": "Apache-2.0",
   "homepage": "https://github.com/martin-k-m/blink#readme",
@@ -19,12 +19,12 @@
     "devtools",
     "rust",
     "developer-tools",
-    "project-analysis",
+    "context-engine",
+    "code-intelligence",
     "code-index",
+    "codebase-understanding",
     "dependency-analysis",
-    "workflow",
-    "build-tool",
-    "dev-server"
+    "ai-context"
   ],
   "bin": {
     "blink": "bin/blink.js"

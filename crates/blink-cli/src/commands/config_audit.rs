@@ -84,6 +84,14 @@ pub fn config(args: ConfigArgs) -> Result<()> {
                             "disabled"
                         },
                     );
+                    let context = if !cfg.context.enabled {
+                        "disabled".to_string()
+                    } else if cfg.context.include.is_empty() {
+                        "enabled (whole project)".to_string()
+                    } else {
+                        format!("enabled (include: {})", cfg.context.include.join(", "))
+                    };
+                    ui::field("Context", context);
 
                     // Warn about profiles that reference no commands.
                     let empty: Vec<&String> = cfg

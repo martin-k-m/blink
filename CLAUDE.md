@@ -6,24 +6,42 @@ quirks that aren't obvious from the code alone.
 
 ## What this project is
 
-Blink is a Rust developer-acceleration CLI: project detection, dependency
-health analysis, a dev server, a build cache, a plugin system, and an
-interactive terminal dashboard, distributed via npm. It was built in this
-repo from an empty skeleton (`README.md` + `LICENSE`) up through four
-shipped milestones (v0.1–v0.4). See `docs/roadmap.md` for what shipped in
-each and `docs/architecture.md` for how the nine crates fit together.
+Blink is a Rust-powered developer **context engine**: it builds reliable,
+local, deterministic understanding of any codebase — a *context graph* of
+its identity, areas, dependencies, files, symbols, and references — for
+humans and their tools. Around that core it also does project detection,
+dependency health analysis, a dev server, a build cache, a plugin system,
+and an interactive terminal dashboard, distributed via npm. (The tagline is
+"The context layer for modern software development." AI can generate code
+but struggles to *understand* existing codebases; Blink is the missing
+context layer — local-first, offline by default, no fabricated output, no
+LLM required. The "workflow engine" — `optimize`/`doctor`/`tasks`/`clean` —
+remains one feature among many, not the product's category.) It was built
+in this repo from an empty skeleton (`README.md` + `LICENSE`) up through
+several shipped milestones (v0.1–v0.6). See `docs/roadmap.md` for what
+shipped in each and `docs/architecture.md` for how the fourteen crates fit
+together.
 
-**Current status:** v0.5 shipped the "phase 5–8" work on top of v0.4 — a
-new incremental index (`blink-index`), a fact-driven workflow engine
-(`blink-workflow`), and 21 new subcommands (`inspect`/`optimize`/`doctor`/
-`index`/`search`/`symbols`/`hotspots`/`timeline`/`tasks`/`task`/`clean`/
-`env`/`check`/`setup`/`completions`/`config check`/... ) plus `.bnk` as a
-signature alternate filename for the `blink.toml` schema. Then a Phase 9
+**Current status:** v0.6 shipped the **context engine** on top of v0.5 —
+three new crates (`blink-context` builds the serializable context graph,
+`blink-query` runs deterministic local search over it, `blink-export`
+serializes it to JSON/YAML/Markdown/Mermaid) and 5 new subcommands
+(`context`/`query`/`map`/`explain`/`export`), plus a `[context]` config
+table (`enabled`/`include`) and cross-file + cross-crate reference
+resolution (TS/JS/Python imports, Rust `mod`, and workspace `<crate>::`
+references — an import that can't be matched to a real project file is never
+turned into an edge). This built on v0.5, which shipped the "phase 5–8" work
+on top of v0.4 — a new incremental index (`blink-index`), a fact-driven
+workflow engine (`blink-workflow`), and 21 subcommands (`inspect`/`optimize`/
+`doctor`/`index`/`search`/`symbols`/`hotspots`/`timeline`/`tasks`/`task`/
+`clean`/`env`/`check`/`setup`/`completions`/`config check`/... ) plus `.bnk`
+as a signature alternate filename for the `blink.toml` schema, and a Phase 9
 1.0-stabilization pass (actionable errors, grouped `--help`,
-`FEATURE_AUDIT.md`, more fixtures/docs). 142 tests passing, `cargo
-fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s v0.5 section for
-what shipped and which spec collisions were resolved how.
-**Published & auto-releasing (currently `0.5.3`):** the repo is public and
+`FEATURE_AUDIT.md`, more fixtures/docs). The workspace is now **fourteen
+crates**. 182 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
+`docs/roadmap.md`'s v0.5/v0.6 sections for what shipped and which spec
+collisions were resolved how.
+**Published & auto-releasing (currently `0.6.0`):** the repo is public and
 on npm as **`@martin-k-m/blink`** (`npm install -g @martin-k-m/blink`). The
 unscoped `blink-cli` on npm is an unrelated package; always use the scoped
 name. **Releasing is fully automated** via `.github/workflows/release.yml`

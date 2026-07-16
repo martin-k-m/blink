@@ -26,6 +26,11 @@ test = "npm test"
 enabled = true
 auto_update = true
 
+# Optional: the context engine (blink context/query/map/explain/export).
+[context]
+enabled = true
+include = ["src", "crates"]  # empty = whole project
+
 # Optional: preferred `blink report` format when none is given on the CLI.
 [report]
 format = "markdown"
@@ -61,13 +66,17 @@ whichever file is present.
 | `[commands]`      | *(any)*       | `string`          | `{}`    | Named tasks. `blink tasks` lists them; `blink task <name>` runs one. Override same-named tasks discovered elsewhere (package.json scripts, Makefile targets, ...). |
 | `[index]`         | `enabled`     | `bool`            | `true`  | When `false`, index-backed commands build a throwaway in-memory index instead of persisting `.blink/index.json`. |
 | `[index]`         | `auto_update` | `bool`            | `true`  | When `true`, index-backed commands incrementally refresh and save the index before running. |
+| `[context]`       | `enabled`     | `bool`            | `true`  | When `false`, the context-engine commands (`context`/`query`/`map`/`explain`/`export`) refuse to run. |
+| `[context]`       | `include`     | `array<string>`   | `[]`    | Project-relative path roots the context graph is limited to. Empty (the default) covers the whole project. A root matches on a path-segment boundary — `"src"` covers `src/main.rs` but not `srcgen/x.rs`. |
 | `[report]`        | `format`      | `string`          | —       | Preferred `blink report` format (`"json"`/`"markdown"`/`"html"`) when none is passed on the CLI. |
 | `[profiles.<name>]` | `commands`  | `array<string>`   | `[]`    | An ordered command sequence run by `blink profile <name>`; stops on the first non-zero exit. |
 | `[plugins.<name>]` | *(any)*      | *(any TOML)*      | `{}`    | Opaque per-plugin configuration. Preserved and exposed to plugins; Blink core never reads it. |
 
 `blink.toml`/`.bnk` is optional. Every command falls back to sensible
 defaults if it's missing, and `blink init` is idempotent — it's safe to
-re-run.
+re-run. `blink config check` validates the file and surfaces a `Context`
+line reporting whether the context engine is enabled and which `include`
+roots (if any) it's limited to.
 
 ## Two different caches
 

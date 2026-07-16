@@ -9,8 +9,9 @@ mod project;
 mod tests;
 
 pub use config::{
-    BlinkConfig, IndexConfig, OptimizationConfig, ProfileConfig, ProjectConfig, ReportConfig,
-    ScanConfig, ServerConfig, CONFIG_FILE_NAME, CONFIG_FILE_NAMES, SIGNATURE_CONFIG_FILE_NAME,
+    BlinkConfig, ContextConfig, IndexConfig, OptimizationConfig, ProfileConfig, ProjectConfig,
+    ReportConfig, ScanConfig, ServerConfig, CONFIG_FILE_NAME, CONFIG_FILE_NAMES,
+    SIGNATURE_CONFIG_FILE_NAME,
 };
 pub use detector::{effective_ignored_dirs, ProjectDetector, DEFAULT_IGNORED_DIRS};
 pub use error::{BlinkError, Result};

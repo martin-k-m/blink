@@ -23,10 +23,45 @@ Everything below is implemented, tested, and published.
 
 ## Tagline
 
-> Blink removes friction between writing code and running software.
+> The context layer for modern software development.
+
+Alternative: **Understand any codebase. Instantly.**
+
+Hero / description:
+
+> Blink is a Rust-powered developer context engine that builds reliable,
+> local understanding of any codebase — for humans and their tools.
+
+## Positioning
+
+Blink is a **developer context engine**: it builds a single, local,
+deterministic model of a codebase — a *context graph* of its identity,
+areas, dependencies, files, symbols, and the references between them — and
+answers questions against it (`context`, `query`, `map`, `explain`,
+`export`).
+
+AI can generate code, but it struggles to *understand* an existing
+codebase. Blink is the missing context layer that both developers and their
+tooling can rely on. It is **local-first, offline by default, deterministic,
+and privacy-focused** — no fabricated output, no LLM required. References
+are resolved conservatively; an import that doesn't map to a real project
+file is dropped, never guessed into an edge.
+
+Built for the AI era: AI tools are powerful, but *context* is what makes
+them reliable. Blink has no AI integration and needs none — the point is
+that it supplies the trustworthy, structured context that AI tooling
+otherwise lacks.
 
 ## Current features
 
+- **A developer context engine** — `blink context` builds a serializable
+  context graph of the project (identity, areas, dependencies, files,
+  symbols, references); `blink query` runs deterministic local search over
+  it; `blink map` renders the architecture (areas + dependency edges, or
+  Mermaid); `blink explain` describes one file from real signals only (its
+  doc comment, declared symbols, imports, and importers); `blink export`
+  serializes the graph to JSON/YAML/Markdown/Mermaid. Local, deterministic,
+  and never invented.
 - **Project intelligence** — `blink inspect` explains what a project is,
   how to run it, and where to start; `blink optimize` scores it against
   six concrete rule-based checks; `blink doctor` verifies the environment
@@ -86,6 +121,7 @@ cargo install --path crates/blink-cli
 All working today, grouped as `blink --help` presents them:
 
 **Get started:** `init` · `scan` · `inspect` · `doctor` · `setup`
+**Context engine:** `context` · `query` · `map` · `explain` · `export`
 **Understand:** `analyze` · `deps` · `health` · `recommend` · `optimize` · `security`
 **Index & search:** `index` · `status` · `search` · `symbols` · `hotspots` · `timeline`
 **Work in it:** `run` · `watch` · `build` · `tasks` · `task` · `profile` · `check` · `clean` · `env` · `ci`
@@ -94,6 +130,9 @@ All working today, grouped as `blink --help` presents them:
 
 | Command | Purpose |
 | --- | --- |
+| `blink context` / `query` / `map` | Build, search, and render the project's context graph. |
+| `blink explain` | Explain one file from real signals only (doc comment, symbols, imports, importers). |
+| `blink export` | Serialize the context graph to JSON/YAML/Markdown/Mermaid. |
 | `blink inspect` | What is this project, how to run it, where to start. |
 | `blink optimize` | Rule-based 0–100 score with concrete suggestions. |
 | `blink doctor` | Verify the environment can build the project. |
@@ -108,7 +147,7 @@ per-command inventory is in [`docs/FEATURE_AUDIT.md`](FEATURE_AUDIT.md).
 
 ## Architecture
 
-Eleven Rust crates in one Cargo workspace, plus an npm distribution
+Fourteen Rust crates in one Cargo workspace, plus an npm distribution
 package:
 
 `blink-parser` (manifest/lockfile parsing) → `blink-core` (project
@@ -116,7 +155,9 @@ detection, config) → `blink-analyzer` (dependency health) → `blink-report`
 (output formatting) → `blink-cli` (commands, terminal UI), with
 `blink-cache` (build + analysis caching), `blink-server` (dev server,
 file watching), `blink-index` (incremental file/symbol index),
-`blink-workflow` (optimize/doctor/tasks/clean/env), `blink-plugin`
+`blink-workflow` (optimize/doctor/tasks/clean/env), `blink-context` (the
+context graph), `blink-query` (deterministic local search over it),
+`blink-export` (serializes it to JSON/YAML/Markdown/Mermaid), `blink-plugin`
 (subprocess plugins), and `blink-dashboard` (the terminal UI) alongside.
 `packages/blink-cli` is the npm package (`@martin-k-m/blink`) that
 distributes the compiled binary.

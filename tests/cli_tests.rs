@@ -632,3 +632,128 @@ fn build_creates_and_reuses_cache() {
 
     assert!(dir.path().join(".blink").join("cache.json").is_file());
 }
+
+// --- Context engine ---------------------------------------------------------
+
+/// A copy of the monorepo fixture in a fresh tempdir, so context commands can
+/// write `.blink/` without touching the checked-in fixture.
+fn monorepo_copy() -> tempfile::TempDir {
+    let dir = tempfile::TempDir::new().unwrap();
+    copy_dir(&tests_fixture("monorepo"), dir.path());
+    dir
+}
+
+#[test]
+fn context_reports_project_understanding() {
+    let dir = monorepo_copy();
+    blink()
+        .arg("context")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Blink Context"))
+        .stdout(predicate::str::contains("Important areas"))
+        .stdout(predicate::str::contains("crates/lib"));
+}
+
+#[test]
+fn context_json_is_valid_and_measured() {
+    let dir = monorepo_copy();
+    let output = blink()
+        .arg("context")
+        .arg(dir.path())
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert_eq!(json["project"]["language"], "Rust");
+    assert!(json["stats"]["source_files"].as_u64().unwrap() >= 2);
+    assert!(json["areas"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|a| a["path"].as_str().is_some_and(|p| p.contains("crates/lib"))));
+}
+
+#[test]
+fn map_graph_format_emits_mermaid_with_cross_crate_edge() {
+    let dir = monorepo_copy();
+    // app depends on lib (`monorepo_lib::add`), so there is a cross-area edge.
+    blink()
+        .arg("map")
+        .arg(dir.path())
+        .arg("--format")
+        .arg("graph")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("graph TD"))
+        .stdout(predicate::str::contains("-->"));
+}
+
+#[test]
+fn query_finds_symbol_in_the_graph() {
+    let dir = monorepo_copy();
+    blink()
+        .arg("query")
+        .arg("add")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Blink Query"))
+        .stdout(predicate::str::contains("add"));
+}
+
+#[test]
+fn explain_uses_real_signals_only() {
+    let dir = monorepo_copy();
+    blink()
+        .arg("explain")
+        .arg("crates/app/src/main.rs")
+        .arg(dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Blink Explain"))
+        .stdout(predicate::str::contains("main"))
+        // The cross-crate use resolves to the lib crate's root.
+        .stdout(predicate::str::contains("crates/lib/src/lib.rs"))
+        .stdout(predicate::str::contains("nothing is inferred"));
+}
+
+#[test]
+fn export_json_round_trips() {
+    let dir = monorepo_copy();
+    let output = blink()
+        .arg("export")
+        .arg(dir.path())
+        .arg("--format")
+        .arg("json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert!(json["files"].as_array().unwrap().len() >= 2);
+    assert!(json["references"].as_array().is_some());
+}
+
+#[test]
+fn context_disabled_in_config_is_refused() {
+    let dir = monorepo_copy();
+    std::fs::write(
+        dir.path().join(".bnk"),
+        "[project]\nname = \"monorepo\"\n\n[context]\nenabled = false\n",
+    )
+    .unwrap();
+    blink()
+        .arg("context")
+        .arg(dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("context engine is disabled"));
+}

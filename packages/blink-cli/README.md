@@ -1,6 +1,8 @@
 # @martin-k-m/blink
 
-npm distribution for Blink, a Rust-powered developer acceleration toolkit.
+npm distribution for Blink, a Rust-powered developer context engine — the
+context layer that gives developers and their tools reliable, local
+understanding of any codebase.
 
 ```sh
 npm install -g @martin-k-m/blink

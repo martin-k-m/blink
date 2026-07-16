@@ -60,6 +60,13 @@ fn main() {
         Command::Setup(args) => commands::setup::run(args),
         Command::Completions(args) => commands::completions::run(args),
         Command::Config(args) => commands::config_audit::config(args),
+
+        // Context engine
+        Command::Context(args) => commands::context::run(args),
+        Command::Query(args) => commands::query::run(args),
+        Command::Explain(args) => commands::explain::run(args),
+        Command::Map(args) => commands::map::run(args),
+        Command::Export(args) => commands::export::run(args),
     };
 
     if let Err(err) = result {

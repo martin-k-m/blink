@@ -10,6 +10,36 @@ Released on npm as `@martin-k-m/blink` and as GitHub releases with
 cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
 development milestones (merged to `main`, never tagged individually).
 
+## [0.6.0] — 2026-07-16
+
+The **context engine** — Blink's repositioning from a developer-acceleration
+toolkit to a *developer context engine*: reliable, local understanding of
+any codebase, for humans and their tools.
+
+### Added
+- **`blink-context`** — builds the project **context graph**, unifying
+  detection, the file/symbol index, and declared dependencies into one
+  serializable model, with files grouped into **areas** and file→file
+  **references** resolved conservatively (TS/JS relative imports, Python
+  imports, Rust `mod` trees, and cross-crate `<crate>::` paths in a Cargo
+  workspace). An unresolvable import is never turned into an invented edge.
+- **`blink-query`** — deterministic, local structured search over the graph
+  (areas, files, symbols, dependencies, commands). Not AI, no inference.
+- **`blink-export`** — serializes the graph to JSON, YAML, Markdown, and a
+  Mermaid architecture graph (YAML via a small internal emitter, no new dep).
+- **Commands:** `context`, `query`, `map`, `explain`, `export`. `explain`
+  reports only real signals — a file's own doc, its symbols, its imports,
+  and what imports it — never invented "responsibilities".
+- **`[context]` config** (`enabled`, `include`) in `blink.toml`/`.bnk`,
+  surfaced by `blink config check`.
+- A repositioned README, docs (`docs/context-engine.md`), and a new
+  self-contained landing page under `website/`.
+
+### Changed
+- Positioning across README, npm, and docs: "developer context engine" /
+  "The context layer for modern software development."
+- The workspace is now **fourteen** crates; the test suite is **182** tests.
+
 ## [0.5.3] — 2026-07-16
 
 Also publishes to the GitHub Packages registry (via the built-in

@@ -15,6 +15,7 @@ New to a repo? Start here:\n\
   blink setup       Install dependencies and prepare the project\n\
 \n\
 Understand it:\n\
+  context  query  map  explain  export     the context engine\n\
   analyze  deps  health  optimize  security   dependency & quality analysis\n\
   index  search  symbols  hotspots  timeline   fast, indexed code intelligence\n\
 \n\
@@ -117,6 +118,18 @@ pub enum Command {
     Completions(CompletionsArgs),
     /// Work with Blink's own configuration (`blink config check`).
     Config(ConfigArgs),
+
+    // --- Context engine ---
+    /// Build the project's context graph and print an understanding report.
+    Context(FormatArgs),
+    /// Search the context graph — areas, files, symbols, dependencies, commands.
+    Query(QueryArgs),
+    /// Explain one file: its doc, symbols, imports, and what imports it.
+    Explain(ExplainArgs),
+    /// Show the architecture: areas and how they reference each other.
+    Map(MapArgs),
+    /// Export the context graph (json, yaml, markdown, or a Mermaid graph).
+    Export(ExportArgs),
 }
 
 #[derive(Args)]
@@ -465,6 +478,65 @@ pub struct CompletionsArgs {
 pub struct ConfigArgs {
     #[command(subcommand)]
     pub action: ConfigAction,
+}
+
+#[derive(Args)]
+pub struct QueryArgs {
+    /// What to search for (e.g. "authentication", "where are API routes").
+    pub query: String,
+
+    /// Directory to search.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Maximum results to show per group.
+    #[arg(long, default_value_t = 10)]
+    pub limit: usize,
+
+    /// Print machine-readable JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct ExplainArgs {
+    /// File to explain, as a project-relative path (e.g. src/auth/login.rs).
+    pub file: String,
+
+    /// Project directory the file belongs to.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Print machine-readable JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+#[derive(Args)]
+pub struct MapArgs {
+    /// Directory to map.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Output format: `terminal` (default), `markdown`, `json`, or `graph`
+    /// (a Mermaid diagram).
+    #[arg(long, default_value = "terminal")]
+    pub format: String,
+}
+
+#[derive(Args)]
+pub struct ExportArgs {
+    /// Directory to export.
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
+
+    /// Export format: `json` (default), `yaml`, `markdown`, or `graph`.
+    #[arg(long, default_value = "json")]
+    pub format: String,
+
+    /// Write to this file instead of stdout.
+    #[arg(short, long)]
+    pub output: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]

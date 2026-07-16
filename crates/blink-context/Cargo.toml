@@ -1,0 +1,24 @@
+[package]
+name = "blink-context"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Builds Blink's project context graph: files, symbols, dependencies, areas, and the references between them."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+blink-core = { workspace = true }
+blink-index = { workspace = true }
+blink-workflow = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+toml = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

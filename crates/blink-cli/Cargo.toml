@@ -26,6 +26,9 @@ blink-plugin = { workspace = true }
 blink-dashboard = { workspace = true }
 blink-index = { workspace = true }
 blink-workflow = { workspace = true }
+blink-context = { workspace = true }
+blink-query = { workspace = true }
+blink-export = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
 clap_complete = { workspace = true }

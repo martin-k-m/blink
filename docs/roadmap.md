@@ -114,7 +114,40 @@ which doesn't exist yet — see the note below), and true partial
 incremental *analysis* (the index tracks per-file state, but `optimize`/
 `analyze` still recompute their whole result).
 
-## v0.6 — Blink Runtime (planned)
+## v0.6 — The context engine (shipped)
+
+The step that repositions Blink from "a toolkit of commands" to a
+**developer context engine**: a single, local, deterministic model of a
+codebase that both people and their tooling can rely on. Three new crates —
+`blink-context`, `blink-query`, and `blink-export` — over one shared graph,
+plus 5 new subcommands:
+
+- [x] **The context graph** (`blink-context`): a serializable `ContextGraph`
+      unifying detection (identity), the index's files/symbols, declared
+      dependencies, commands, and the file→file references between files.
+      Files are grouped into "areas" (`(root)`, `src/auth`,
+      `crates/blink-core`, ...).
+- [x] **Cross-file + cross-crate reference resolution**, resolved
+      conservatively: TS/JS relative imports, Python imports, Rust `mod`
+      declarations, and Rust `<crate>::` references across a Cargo workspace
+      (resolved to that crate's `src/lib.rs`/`main.rs`). An import that
+      can't be matched to a real project file is never turned into an edge.
+- [x] **Local structured search** (`blink-query`): `blink query` tokenizes a
+      query (camelCase-split, stop/question words dropped) and ranks
+      areas/files/symbols/dependencies/commands by name match. Deterministic
+      lexical search over the local model — not AI, no inference.
+- [x] **Export** (`blink-export`): `blink export` serializes the graph to
+      JSON, YAML, Markdown, or a Mermaid architecture graph (YAML via a
+      small internal emitter, no external YAML dependency).
+- [x] **5 new commands**: `context` (understanding report), `query`
+      (structured search), `explain` (one file, from real signals only —
+      its doc comment, declared symbols, imports, and importers), `map`
+      (areas + area→area edges, `graph` emits Mermaid), and `export`.
+- [x] **`[context]` config** in `blink.toml`/`.bnk` — `enabled` (gate the
+      commands) and `include` (limit the graph to path roots). `blink config
+      check` surfaces a `Context` line.
+
+## v0.7 — Blink Runtime (planned)
 
 This is where `blink build` stops being cache bookkeeping and starts being
 a real build tool:
@@ -127,7 +160,7 @@ a real build tool:
 - [ ] AST-aware unused-dependency detection, replacing the current
       substring scan (see the known limitation in `docs/analysis.md`).
 
-## v0.7 — Ecosystem (planned)
+## v0.8 — Ecosystem (planned)
 
 - [ ] VS Code extension surfacing scan/analyze results inline.
 - [ ] A plugin *registry* — `blink plugins install` currently only copies

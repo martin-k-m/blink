@@ -1,6 +1,6 @@
 # Architecture
 
-Blink is a Cargo workspace of eleven crates, plus an npm package that
+Blink is a Cargo workspace of fourteen crates, plus an npm package that
 distributes the compiled binary. Three low-level crates read and format
 data with no domain knowledge of "what a project is"; the rest build up
 from there. No crate depends on a "sibling" it doesn't need — `blink-cli`
@@ -160,6 +160,43 @@ and nothing claims a speedup it did not measure. It reuses the heavy
 per-file work (hashes, symbols) from `blink-index` and dependency findings
 from `blink-analyzer` rather than recomputing them.
 
+### `blink-context`
+
+Builds the project **context graph** — the shared model the context engine
+answers questions against. It unifies three existing sources into one
+serializable `ContextGraph`: `blink-core`'s detection (project identity),
+`blink-index`'s files and symbols, and the manifest's declared
+dependencies, plus the project's commands and the file→file references
+between its files. References are resolved *conservatively*: TS/JS relative
+imports, Python absolute/relative imports, Rust `mod` declarations, and —
+inside a Cargo workspace — Rust `<crate>::` references (in a `use` or an
+inline path) resolved to that crate's `src/lib.rs`/`main.rs`. An import
+that can't be resolved to a real project file is **never** turned into an
+invented edge. Files are grouped into "areas" — a directory grouping where
+top-level files are `(root)` and files under a container dir (`src`,
+`crates`, `packages`) group by container plus next segment (`src/auth`,
+`crates/blink-core`). Depends on `blink-core`, `blink-index`,
+`blink-workflow`, `serde`, `rayon`, and `toml`.
+
+### `blink-query`
+
+Deterministic, **local** structured search over the `ContextGraph`. It
+tokenizes the query (splitting camelCase), drops stop and question words
+("where", "is", "the", ...), and ranks areas, files, symbols, dependencies,
+and commands by name match. It is lexical search over the local model — not
+AI, and it performs no inference. Kept separate from `blink-context` so the
+graph-building and graph-querying concerns don't bleed into each other.
+Depends only on `blink-context`.
+
+### `blink-export`
+
+Serializes a `ContextGraph` to JSON, YAML, Markdown, and a Mermaid
+architecture graph. The YAML path uses a small internal block-style emitter
+rather than pulling in an external YAML dependency. Separating export from
+both graph-building and querying keeps output-format knowledge in one place
+(mirroring how `blink-report` isolates analysis formatting). Depends on
+`blink-context` and `serde_json`.
+
 ### `blink-cli`
 
 Wires everything above into Blink's subcommands with a consistent
@@ -208,3 +245,13 @@ puts a `blink` command on `PATH`. It contains no logic of Blink's own;
   language, no ABI to keep stable across Rust versions) without either
   the reliability cost of `dlopen`-style native plugin loading or
   pretending a package registry exists when it doesn't.
+- **The context engine invents no edges.** The `ContextGraph`
+  (`blink-context`) is built entirely from measured facts — detection,
+  the index's files/symbols, declared dependencies — and its file→file
+  references are resolved *conservatively*: an import that doesn't map to
+  a real project file is dropped, never guessed into an edge. `blink-query`
+  is deliberately deterministic lexical search over that model with no
+  inference, and `blink-export` only serializes what the graph already
+  contains. Building the graph, searching it, and serializing it are three
+  separable concerns kept in three crates over one shared model, so none
+  of them grows knowledge of the others' job.

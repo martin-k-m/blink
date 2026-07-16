@@ -104,3 +104,32 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+
+  # npm publish lives here (not in a separate release-triggered workflow) on
+  # purpose: a GitHub Release created by the default GITHUB_TOKEN does NOT emit
+  # a `release` event that can trigger other workflows, so an `on: release`
+  # publish would silently never run. Keying off the same tag push — after the
+  # binaries and Release exist (needs: release) — avoids that entirely.
+  publish-npm:
+    name: Publish to npm
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      # publishConfig.access=public in package.json publishes the scoped package
+      # publicly; --provenance records the signed repo/commit/workflow link.
+      # Requires the NPM_TOKEN repository secret (npm automation/granular token).
+      - name: Publish @martin-k-m/blink
+        run: npm publish --provenance
+        working-directory: packages/blink-cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -10,12 +10,19 @@ Released on npm as `@martin-k-m/blink` and as GitHub releases with
 cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
 development milestones (merged to `main`, never tagged individually).
 
+## [0.5.2] — 2026-07-16
+
+Fixes automated npm publishing. The npm publish now runs as a job *inside*
+the tag-triggered release workflow (with **provenance**), instead of a
+separate `on: release` workflow — the latter never fired, because a GitHub
+Release created by the default `GITHUB_TOKEN` doesn't emit a `release` event
+that can trigger other workflows. No functional changes to the tool.
+
 ## [0.5.1] — 2026-07-16
 
-First fully-automated release: pushing the `v0.5.1` tag builds the binaries
-and publishes to npm via CI, with **provenance** (a signed attestation
-linking the package to this repo/commit/workflow). No functional changes to
-the tool since `0.5.0`.
+Tagged; binaries built and a GitHub release created — but the npm
+auto-publish did *not* run (the `on: release` trigger issue fixed in
+`0.5.2`), so `0.5.1` was never published to npm. Superseded by `0.5.2`.
 
 ## [0.5.0] — 2026-07-16
 

@@ -6,8 +6,29 @@ use clap::{Args, Parser, Subcommand};
 #[command(
     name = "blink",
     version,
-    about = "A Rust-powered developer acceleration toolkit.",
-    long_about = "Blink removes friction between writing code and running software."
+    about = "Understand and optimize any project — fast.",
+    long_about = "\u{26a1} Blink — understand and optimize any project, fast.\n\
+\n\
+New to a repo? Start here:\n\
+  blink inspect     What is this project, how to run it, where to start\n\
+  blink doctor      Check your environment can build it (runtimes, tools)\n\
+  blink setup       Install dependencies and prepare the project\n\
+\n\
+Understand it:\n\
+  analyze  deps  health  optimize  security   dependency & quality analysis\n\
+  index  search  symbols  hotspots  timeline   fast, indexed code intelligence\n\
+\n\
+Work in it:\n\
+  run  watch  build      dev server, live analysis, build cache\n\
+  tasks  task  profile   discover and run project commands\n\
+  check  clean  env       validate, clean caches, manage .env\n\
+\n\
+Report on it:\n\
+  report  docs  duplicates  filesystem  config-audit  dashboard\n\
+\n\
+Configuration lives in blink.toml (or .bnk). Validate it with\n\
+`blink config check`. Run `blink <command> --help` for details and\n\
+examples on any command."
 )]
 pub struct Cli {
     #[command(subcommand)]

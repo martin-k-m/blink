@@ -1,6 +1,7 @@
 mod analysis;
 mod cli;
 mod commands;
+mod errors;
 mod indexing;
 mod proc;
 mod ui;
@@ -62,7 +63,7 @@ fn main() {
     };
 
     if let Err(err) = result {
-        eprintln!("{} {err:#}", "error:".red().bold());
+        errors::render(&err);
         std::process::exit(1);
     }
 }

@@ -13,6 +13,14 @@ target
 # Contains mutation testing data
 **/mutants.out*/
 
+# Blink's own build cache (created by `blink build` / `blink run`)
+.blink/
+
+# Example fixtures under examples/ install real dependencies when exercised manually
+examples/**/node_modules/
+examples/**/target/
+examples/**/Cargo.lock
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

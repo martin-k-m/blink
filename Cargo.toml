@@ -1,0 +1,75 @@
+[package]
+name = "blink"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Workspace root crate; hosts Blink's cross-crate integration tests."
+
+[dev-dependencies]
+blink-core = { workspace = true }
+blink-analyzer = { workspace = true }
+assert_cmd = { workspace = true }
+predicates = { workspace = true }
+tempfile = { workspace = true }
+
+[workspace]
+resolver = "2"
+members = [
+    "crates/blink-cli",
+    "crates/blink-core",
+    "crates/blink-analyzer",
+    "crates/blink-cache",
+    "crates/blink-server",
+]
+exclude = ["examples"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Blink Contributors"]
+license = "Apache-2.0"
+repository = "https://github.com/martin-k-m/blink"
+homepage = "https://github.com/martin-k-m/blink"
+description = "A Rust-powered developer acceleration toolkit."
+readme = "README.md"
+keywords = ["cli", "devtools", "build-tool", "dev-server", "watcher"]
+categories = ["command-line-utilities", "development-tools"]
+
+[workspace.dependencies]
+blink-core = { path = "crates/blink-core", version = "0.1.0" }
+blink-analyzer = { path = "crates/blink-analyzer", version = "0.1.0" }
+blink-cache = { path = "crates/blink-cache", version = "0.1.0" }
+blink-server = { path = "crates/blink-server", version = "0.1.0" }
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "time", "signal", "sync"] }
+rayon = "1.10"
+notify = "6"
+notify-debouncer-mini = "0.4"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+colored = "2"
+anyhow = "1"
+thiserror = "1"
+walkdir = "2"
+sha2 = "0.10"
+hex = "0.4"
+tempfile = "3"
+assert_cmd = "2"
+predicates = "3"
+ureq = { version = "2", features = ["json"] }
+semver = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 0

@@ -1,0 +1,32 @@
+[package]
+name = "blink-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "The blink command-line interface."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "blink"
+path = "src/main.rs"
+
+[dependencies]
+blink-core = { workspace = true }
+blink-analyzer = { workspace = true }
+blink-cache = { workspace = true }
+blink-server = { workspace = true }
+tokio = { workspace = true }
+clap = { workspace = true }
+colored = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }
+tempfile = { workspace = true }

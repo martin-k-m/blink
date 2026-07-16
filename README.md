@@ -4,14 +4,9 @@
 
 > Blink removes friction between writing code and running software.
 
+[![npm](https://img.shields.io/npm/v/@martin-k-m/blink.svg)](https://www.npmjs.com/package/@martin-k-m/blink)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
-[![Status: pre-release](https://img.shields.io/badge/status-pre--release-yellow.svg)](#status)
-
-> **Status:** Blink builds, is tested, and works — but it is **not published
-> yet**. There's no npm package, no public release, and the repository is
-> private. Build it from source (below); the npm/release install paths are
-> planned, not yet available. See [Status](#status).
 
 Blink is the first thing to run after cloning a repo: it tells you what
 the project is, how to run it, and where to start; reports on dependency
@@ -19,9 +14,12 @@ health with a documented (not invented) score; indexes the codebase for
 instant search; runs the project's own tasks; and validates your
 environment — all from one small, fast binary.
 
-New here? Build it from source ([Installation](#installation)), then run
-`blink inspect` in any project. Start with
-[`docs/getting-started.md`](docs/getting-started.md).
+```sh
+npm install -g @martin-k-m/blink
+blink inspect
+```
+
+New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
 
 ## Features
 
@@ -72,42 +70,29 @@ what's shipped versus planned.
 
 ## Installation
 
-Blink isn't published yet, so the way to install it today is to build it
-from source (you'll need [Rust](https://www.rust-lang.org/tools/install)
-1.75+ and access to the repository):
-
 ```sh
-git clone <repository-url>
-cd blink
-cargo install --path crates/blink-cli
+npm install -g @martin-k-m/blink
 blink --version
 ```
 
-That's the only supported install path right now — see
-[Status](#status) for what "not published yet" means and what's planned.
+This downloads the `blink` binary matching your platform from the matching
+[GitHub release](https://github.com/martin-k-m/blink/releases), verifies
+its SHA-256 checksum, and puts a `blink` command on your `PATH`. Supported:
+macOS (x64, arm64), Linux (x64, arm64), Windows (x64).
 
-## Status
+> The unscoped `blink-cli` on npm is an unrelated, deprecated package — the
+> scoped **`@martin-k-m/blink`** is this tool. The binary download runs as a
+> postinstall script; if your npm is configured to block install scripts,
+> allow it for this package or build from source (below).
 
-Blink is **pre-release**. Everything documented here is implemented,
-tested (142 tests, `clippy -D warnings` clean), and works locally — but
-nothing has been distributed:
+Prefer building from source, or on an unsupported platform? You'll need
+[Rust](https://www.rust-lang.org/tools/install) 1.75+:
 
-- **No npm package.** A one-line `npm install -g` is *planned* (the
-  installer in `packages/blink-cli` is written and verified against a
-  locally built binary), but nothing is published. Note: the bare name
-  `blink-cli` on npm today is an **unrelated, deprecated package** — do
-  not install it expecting this tool. A published name hasn't been
-  finalized or reserved.
-- **No public releases.** The cross-platform release workflow
-  ([`.github/workflows/release.yml`](.github/workflows/release.yml))
-  builds macOS/Linux/Windows binaries on a version tag, but no tag has
-  been pushed and no GitHub Release exists.
-- **Private repository.** The source isn't public yet, so links to the
-  repo, issues, and CI won't resolve for everyone.
-
-None of this affects what the tool *does* — it only means the "install it
-like a real package" story is future work, tracked in
-[`docs/roadmap.md`](docs/roadmap.md).
+```sh
+git clone https://github.com/martin-k-m/blink.git
+cd blink
+cargo install --path crates/blink-cli
+```
 
 ## Usage
 

@@ -18,13 +18,18 @@ new incremental index (`blink-index`), a fact-driven workflow engine
 (`blink-workflow`), and 21 new subcommands (`inspect`/`optimize`/`doctor`/
 `index`/`search`/`symbols`/`hotspots`/`timeline`/`tasks`/`task`/`clean`/
 `env`/`check`/`setup`/`completions`/`config check`/... ) plus `.bnk` as a
-signature alternate filename for the `blink.toml` schema. ~136 tests
-passing, `cargo fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s
-v0.5 section for what shipped and which spec collisions were resolved how.
-**Nothing has been published** — no `npm publish`, no `git tag` pushed, so
-no GitHub Release exists yet and the npm package (`packages/blink-cli`) has
-nothing real to download (it's been verified end-to-end against a
-*locally built* binary via `BLINK_LOCAL_BIN`, not a real release).
+signature alternate filename for the `blink.toml` schema. Then a Phase 9
+1.0-stabilization pass (actionable errors, grouped `--help`,
+`FEATURE_AUDIT.md`, more fixtures/docs). 142 tests passing, `cargo
+fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s v0.5 section for
+what shipped and which spec collisions were resolved how.
+**Published (v0.5.0):** the repo is public, tagged `v0.5.0`, released with
+cross-platform binaries, and on npm as **`@martin-k-m/blink`**
+(`npm install -g @martin-k-m/blink` — verified end-to-end). The unscoped
+`blink-cli` on npm is an unrelated package; always use the scoped name. To
+cut a new release: bump the workspace + `packages/blink-cli` version
+together, then `git tag vX.Y.Z && git push origin vX.Y.Z`, then
+`npm publish` (owner does the npm publish).
 
 **Outstanding, not yet addressed:** GitHub flagged 3 Dependabot
 vulnerabilities on `main` (1 high, 2 moderate) after the v0.4 merge —

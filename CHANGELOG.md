@@ -6,12 +6,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Versioning
 
-**`0.5.0` is the intended first tagged release.** The workspace and the npm
-package are versioned `0.5.0`; tagging `v0.5.0` triggers the release
-workflow that builds the cross-platform binaries. Until that tag is pushed,
-no GitHub Release or npm package exists yet (see the README's Status
-section). Earlier `v0.1`–`v0.4` entries below are development milestones
-that were merged to `main` but never tagged individually.
+**`0.5.0` is the first tagged, published release** — on npm as
+`@martin-k-m/blink` and as GitHub release `v0.5.0` with cross-platform
+binaries. Earlier `v0.1`–`v0.4` entries below are development milestones
+that were merged to `main` but never tagged or published individually.
 
 ## [0.5.0] — 2026-07-16
 
@@ -34,8 +32,14 @@ stabilization pass.
 
 ### Changed
 - Refreshed the README and docs to the shipped surface (eleven crates, the
-  full command set, `.bnk`), and corrected install claims to reflect that
-  Blink is pre-release (build-from-source; npm/releases labeled planned).
+  full command set, `.bnk`).
+
+### Distribution
+- First public release. Published to npm as **`@martin-k-m/blink`**, with a
+  public GitHub release (`v0.5.0`) carrying checksummed binaries for
+  macOS (x64/arm64), Linux (x64/arm64), and Windows (x64). Install with
+  `npm install -g @martin-k-m/blink`. (The unscoped `blink-cli` on npm is
+  an unrelated package.)
 
 ### Notes
 - `blink run` stayed the dev server; task-running is `blink task`.

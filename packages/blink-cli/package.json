@@ -1,16 +1,31 @@
 {
   "name": "@martin-k-m/blink",
   "version": "0.5.0",
-  "description": "A Rust-powered developer acceleration toolkit. This package downloads the native `blink` binary for your platform on install.",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Understand and optimize any project — fast. Rust-powered developer toolkit: project intelligence, an incremental code index, and a workflow engine. This package downloads the native `blink` binary for your platform on install.",
+  "author": "martin-k-m",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/martin-k-m/blink",
+  "homepage": "https://github.com/martin-k-m/blink#readme",
   "bugs": "https://github.com/martin-k-m/blink/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/martin-k-m/blink.git",
     "directory": "packages/blink-cli"
   },
-  "keywords": ["cli", "devtools", "rust", "build-tool", "dev-server"],
+  "keywords": [
+    "cli",
+    "devtools",
+    "rust",
+    "developer-tools",
+    "project-analysis",
+    "code-index",
+    "dependency-analysis",
+    "workflow",
+    "build-tool",
+    "dev-server"
+  ],
   "bin": {
     "blink": "bin/blink.js"
   },

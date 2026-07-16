@@ -1,27 +1,23 @@
-# blink-cli (npm distribution — pre-release, not published)
-
-> **This package is not published.** Blink is pre-release: there is no npm
-> release and no GitHub release for it to download. **Do not** run
-> `npm install -g blink-cli` expecting this tool — that name currently
-> belongs to an unrelated, deprecated package. Install Blink by
-> [building from source](../../README.md#installation) instead. A real,
-> reserved package name is future work.
+# @martin-k-m/blink
 
 npm distribution for Blink, a Rust-powered developer acceleration toolkit.
 
-Once published (under a finalized name), installing will look like this,
-downloading the prebuilt `blink` binary and putting it on your `PATH`:
-
 ```sh
-# planned — not yet available
-npm install -g <published-name>
+npm install -g @martin-k-m/blink
 blink --version
 ```
+
+> Note: `blink-cli` (unscoped) is an unrelated, deprecated package — the
+> scoped `@martin-k-m/blink` above is this tool.
 
 This package contains no logic of its own. On install it downloads the
 prebuilt `blink` binary matching your platform/architecture from the
 matching GitHub release, verifies it against the release's published
 SHA-256 checksum, and installs a thin shim on your `PATH` that execs it.
+
+If your npm is configured to block install scripts, that download won't
+run and `blink` won't be available — allow the postinstall for this
+package, or [build from source](../../README.md#installation) instead.
 
 ## Supported platforms
 

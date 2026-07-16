@@ -2,25 +2,27 @@
 
 ## Install
 
-Blink isn't published yet — there's no npm package or prebuilt release
-(see [Status](../README.md#status)). Build it from source with
-[Rust](https://www.rust-lang.org/tools/install) 1.75+:
-
 ```sh
-git clone <repository-url>
-cd blink
-cargo install --path crates/blink-cli
+npm install -g @martin-k-m/blink
 ```
 
-Verify it worked:
+This downloads the `blink` binary for your platform and puts a `blink`
+command on your `PATH`. Verify it:
 
 ```sh
 blink --version
 ```
 
-A one-line npm install and prebuilt binaries are planned, not yet
-available. (Heads up: the `blink-cli` name on npm today is an unrelated,
-deprecated package — don't install it expecting this tool.)
+The scoped name `@martin-k-m/blink` is this tool (the unscoped `blink-cli`
+is an unrelated package). If your npm blocks install scripts, allow the
+postinstall for this package, or build from source with
+[Rust](https://www.rust-lang.org/tools/install) 1.75+:
+
+```sh
+git clone https://github.com/martin-k-m/blink.git
+cd blink
+cargo install --path crates/blink-cli
+```
 
 ## Your first look
 

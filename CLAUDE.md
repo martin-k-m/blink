@@ -23,13 +23,18 @@ signature alternate filename for the `blink.toml` schema. Then a Phase 9
 `FEATURE_AUDIT.md`, more fixtures/docs). 142 tests passing, `cargo
 fmt`/`clippy -D warnings` clean. See `docs/roadmap.md`'s v0.5 section for
 what shipped and which spec collisions were resolved how.
-**Published (v0.5.0):** the repo is public, tagged `v0.5.0`, released with
-cross-platform binaries, and on npm as **`@martin-k-m/blink`**
-(`npm install -g @martin-k-m/blink` — verified end-to-end). The unscoped
-`blink-cli` on npm is an unrelated package; always use the scoped name. To
-cut a new release: bump the workspace + `packages/blink-cli` version
-together, then `git tag vX.Y.Z && git push origin vX.Y.Z`, then
-`npm publish` (owner does the npm publish).
+**Published as early alpha `0.1.0`** on npm as **`@martin-k-m/blink`**
+(`npm install -g @martin-k-m/blink`) and public on GitHub. The unscoped
+`blink-cli` on npm is an unrelated package; always use the scoped name.
+**Version note:** an early build was briefly published to npm as `0.5.0`
+(overstated maturity); the source/docs were reset to `0.1.0` alpha. npm
+may still serve `0.5.0` as `latest` until the owner unpublishes it
+(`npm unpublish @martin-k-m/blink@0.5.0`, allowed within 72h of publish);
+then re-tag `v0.1.0` to trigger a clean 0.1.0 release + auto-publish. To
+cut any release: bump the workspace + `packages/blink-cli` version
+together, then `git tag vX.Y.Z && git push origin vX.Y.Z` (release.yml
+builds binaries + creates the release; npm-publish.yml auto-publishes on
+`release: published`, needs the `NPM_TOKEN` repo secret).
 
 **Outstanding, not yet addressed:** GitHub flagged 3 Dependabot
 vulnerabilities on `main` (1 high, 2 moderate) after the v0.4 merge —

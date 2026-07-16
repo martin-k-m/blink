@@ -132,7 +132,7 @@ help* (not delete) would be `scan` (largely subsumed by `inspect`) and
 
 ## Dependency & tech-debt notes
 
-- **No unnecessary dependencies** were added in the v0.5 work. `rayon`
+- **No unnecessary dependencies** were added in the index/workflow work. `rayon`
   (parallel hashing in `blink-index`), `clap_complete` (completions),
   `sha2`/`hex` (content hashing) are each used on a real path.
 - **Duplicate transitive versions** exist (`crossterm` 0.28/0.29,

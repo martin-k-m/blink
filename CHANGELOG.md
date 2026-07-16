@@ -6,15 +6,18 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Versioning
 
-**`0.5.0` is the first tagged, published release** — on npm as
-`@martin-k-m/blink` and as GitHub release `v0.5.0` with cross-platform
-binaries. Earlier `v0.1`–`v0.4` entries below are development milestones
-that were merged to `main` but never tagged or published individually.
+Blink is **early alpha**. `0.1.0` is the first public release; expect rough
+edges and breaking changes before `1.0`. The `v0.1`–`v0.5` labels used
+elsewhere in the docs are internal *development milestones* (chunks of work
+merged to `main`), not release versions — the released version is `0.1.0`.
 
-## [0.5.0] — 2026-07-16
+> Maintainer note: an early build was briefly published to npm as `0.5.0`;
+> that number overstated maturity and the project reset to `0.1.0` alpha.
+> The code is the same. If you installed `0.5.0`, `0.1.0` is the successor.
 
-The first tagged release. Bundles the v0.5 feature work with the 1.0
-stabilization pass.
+## [0.1.0] — 2026-07-16 — early alpha
+
+The first public release. Everything Blink does today, shipped as an alpha.
 
 ### Added
 - **Intelligence:** `inspect`, `optimize`, `duplicates`, `doctor`,
@@ -35,15 +38,22 @@ stabilization pass.
   full command set, `.bnk`).
 
 ### Distribution
-- First public release. Published to npm as **`@martin-k-m/blink`**, with a
-  public GitHub release (`v0.5.0`) carrying checksummed binaries for
-  macOS (x64/arm64), Linux (x64/arm64), and Windows (x64). Install with
-  `npm install -g @martin-k-m/blink`. (The unscoped `blink-cli` on npm is
-  an unrelated package.)
+- Published to npm as **`@martin-k-m/blink`**, with a public GitHub release
+  carrying checksummed binaries for macOS (x64/arm64), Linux (x64/arm64),
+  and Windows (x64). Install with `npm install -g @martin-k-m/blink`. (The
+  unscoped `blink-cli` on npm is an unrelated package.)
 
 ### Notes
 - `blink run` stayed the dev server; task-running is `blink task`.
 - Deferred deliberately: a remote plugin registry and `blink self update`.
+
+---
+
+## Pre-release development milestones
+
+The entries below (`v0.1`–`v0.4`) are internal development milestones that
+built up to the `0.1.0` alpha above — they were never published as separate
+releases. They're kept for history.
 
 ## [v0.4] — Intelligent platform
 

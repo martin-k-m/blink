@@ -1,5 +1,8 @@
 # Getting Started
 
+> Blink is **early alpha (v0.1.0)** — it works and is tested, but expect
+> rough edges and breaking changes before 1.0.
+
 ## Install
 
 ```sh

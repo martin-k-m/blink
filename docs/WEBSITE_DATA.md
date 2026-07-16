@@ -1,16 +1,18 @@
 # Website Data
 
 Structured reference for building a marketing/docs site for Blink.
-Everything under "Current" is implemented, tested, and published as of
-v0.5.0. Future work stays under "Roadmap," clearly labeled.
+Everything under "Current" is implemented and tested. Blink is **early
+alpha (v0.1.0)** — present it that way; it's usable but young, with
+breaking changes expected before 1.0. Future work stays under "Roadmap."
 
 ## Status
 
-- **Published on npm** as **`@martin-k-m/blink`** (v0.5.0). Install with
+- **Early alpha, v0.1.0.** Works and is tested; expect rough edges.
+- **Published on npm** as **`@martin-k-m/blink`**. Install with
   `npm install -g @martin-k-m/blink`. Note the unscoped `blink-cli` is an
   unrelated, deprecated package — always use the scoped name.
-- **Public GitHub release** `v0.5.0` with checksummed binaries for
-  macOS (x64/arm64), Linux (x64/arm64), and Windows (x64).
+- **Public GitHub release** with checksummed binaries for macOS
+  (x64/arm64), Linux (x64/arm64), and Windows (x64).
 - **Public repository** at `github.com/martin-k-m/blink`.
 - The npm package downloads its platform binary via a postinstall script;
   on npm setups that block install scripts, users allow it for this

@@ -1,10 +1,14 @@
 # Roadmap
 
-Blink is being built in phases, each shipped as a usable release rather
-than a stepping stone that only matters once everything is finished. This
-file tracks releases (`v0.1`, `v0.2`, ...); it doesn't reuse "Phase N"
-numbering on its own, since that turned out to drift from how the work
-actually shipped — see the note at the bottom.
+> **Release version vs. milestone labels.** Blink's first *public release*
+> is **`0.1.0` (early alpha)** — that's the number in `Cargo.toml`, on npm,
+> and from `blink --version`. The `v0.1`–`v0.5` headings below are internal
+> *development milestones* (chunks of work that built up to the alpha), not
+> separate published releases. Don't read "v0.5" here as a release version.
+
+Blink was built in phases, each a usable chunk of work rather than a
+stepping stone that only matters once everything is finished. The headings
+below track those development milestones.
 
 ## v0.1 — MVP + developer loop (shipped)
 

@@ -4,10 +4,14 @@
 
 > Blink removes friction between writing code and running software.
 
-[![npm](https://img.shields.io/npm/v/@martin-k-m/blink.svg)](https://www.npmjs.com/package/@martin-k-m/blink)
-[![GitHub stars](https://img.shields.io/github/stars/martin-k-m/blink)](https://github.com/martin-k-m/blink)
+[![version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![status: early alpha](https://img.shields.io/badge/status-early%20alpha-orange.svg)](CHANGELOG.md)
+[![npm](https://img.shields.io/badge/npm-%40martin--k--m%2Fblink-cb3837.svg)](https://www.npmjs.com/package/@martin-k-m/blink)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
+
+> **⚠️ Early alpha (v0.1.0).** Blink works and is tested, but it's young —
+> expect rough edges and breaking changes before `1.0`. Feedback welcome.
 
 Blink is the first thing to run after cloning a repo: it tells you what
 the project is, how to run it, and where to start; reports on dependency
@@ -229,17 +233,19 @@ Details, data flow, and the reasoning behind each design decision live in
 
 ## Roadmap
 
-- **v0.1–v0.4 (shipped):** CLI, project detection, analyzer, dev server,
-  build caching, health score, JSON export, npm distribution, a global
-  analysis cache, a real plugin system, and an interactive dashboard.
-- **v0.5 (shipped):** project intelligence (`inspect`/`optimize`/`doctor`),
-  an incremental index (`index`/`search`/`symbols`/`hotspots`), a workflow
-  engine (`tasks`/`task`/`check`/`clean`/`setup`/`env`), and `.bnk` config.
-- **v0.6 (planned):** a real build/optimization pipeline — `blink build`
-  is currently cache bookkeeping, not a bundler.
-- **v0.7 (planned):** VS Code extension, a plugin registry, `self update`.
+**v0.1.0 (early alpha) — shipped:** everything above — project detection
+and intelligence (`inspect`/`optimize`/`doctor`), dependency analysis and a
+documented health score, an incremental index (`index`/`search`/`symbols`/
+`hotspots`), a workflow engine (`tasks`/`check`/`clean`/`setup`/`env`), a
+dev server + dashboard, a subprocess plugin system, npm distribution, and
+`.bnk` configuration.
 
-Full detail in [`docs/roadmap.md`](docs/roadmap.md).
+**Planned (not built):** a real build/optimization pipeline (`blink build`
+is cache bookkeeping today, not a bundler), AST-aware unused-dependency
+detection, a VS Code extension, and a plugin registry.
+
+Full detail — including the internal development-milestone history — in
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ## Development
 

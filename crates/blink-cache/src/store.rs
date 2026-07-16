@@ -26,7 +26,7 @@ const CACHE_FILE: &str = "cache.json";
 
 /// A snapshot of every tracked file's fingerprint, keyed by path relative
 /// to the project root.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Cache {
     entries: BTreeMap<String, CacheEntry>,
 }

@@ -8,6 +8,13 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
+fn tests_fixture(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+}
+
 #[test]
 fn detects_react_typescript_example() {
     let project = ProjectDetector::new()
@@ -60,4 +67,13 @@ fn react_example_has_no_unused_runtime_dependencies() {
         "expected no unused dependencies, found {:?}",
         report.unused
     );
+}
+
+#[test]
+fn react_fixture_flags_its_deliberately_unused_dependency() {
+    let root = tests_fixture("react_project");
+    let project = ProjectDetector::new().detect(&root).unwrap();
+    let report = blink_analyzer::Analyzer::new().analyze(&project, &root);
+
+    assert_eq!(report.unused, vec!["moment".to_string()]);
 }

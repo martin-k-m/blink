@@ -1,0 +1,24 @@
+[package]
+name = "blink-dashboard"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Blink's interactive terminal dashboard, built on ratatui."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+blink-core = { workspace = true }
+blink-analyzer = { workspace = true }
+blink-report = { workspace = true }
+blink-server = { workspace = true }
+ratatui = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

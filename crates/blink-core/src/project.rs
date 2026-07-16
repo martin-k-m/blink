@@ -31,6 +31,7 @@ pub enum Framework {
     NextJs,
     Vue,
     Svelte,
+    Vite,
     Cargo,
     None,
 }
@@ -42,6 +43,7 @@ impl fmt::Display for Framework {
             Framework::NextJs => "Next.js",
             Framework::Vue => "Vue",
             Framework::Svelte => "Svelte",
+            Framework::Vite => "Vite",
             Framework::Cargo => "Cargo",
             Framework::None => "None",
         };
@@ -93,6 +95,12 @@ pub struct Project {
     pub package_manager: PackageManager,
     pub dependencies: Vec<Dependency>,
     pub file_count: usize,
+    /// The manifest file that identified this project, e.g. `"Cargo.toml"`.
+    pub config_file: String,
+    /// Rust only: whether `Cargo.toml` declares a `[workspace]` table.
+    pub is_workspace: bool,
+    /// Python only: whether a `.venv` or `venv` directory is present.
+    pub has_virtualenv: bool,
 }
 
 impl Project {

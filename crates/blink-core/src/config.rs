@@ -20,6 +20,10 @@ pub struct BlinkConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProjectConfig {
     pub name: String,
+    /// Extra directory names to skip during scans/builds, in addition to
+    /// Blink's built-in ignore list (`.git`, `node_modules`, `target`, ...).
+    #[serde(default)]
+    pub ignore: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -55,6 +59,7 @@ impl BlinkConfig {
         Self {
             project: ProjectConfig {
                 name: project_name.into(),
+                ignore: Vec::new(),
             },
             server: ServerConfig::default(),
             optimization: OptimizationConfig::default(),

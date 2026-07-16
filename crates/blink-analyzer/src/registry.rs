@@ -2,9 +2,11 @@ use blink_core::{Language, Project};
 use semver::Version;
 use serde::Deserialize;
 
+use crate::version::clean_version;
+
 /// A dependency whose declared version trails the latest release published
 /// on its package registry.
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct OutdatedPackage {
     pub name: String,
     pub current: String,
@@ -62,11 +64,6 @@ pub fn find_outdated(project: &Project) -> Vec<OutdatedPackage> {
             })
         })
         .collect()
-}
-
-fn clean_version(raw: &str) -> String {
-    raw.trim_start_matches(['^', '~', '=', '>', '<', ' '])
-        .to_string()
 }
 
 fn latest_crates_io_version(name: &str) -> Option<String> {

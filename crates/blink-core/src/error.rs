@@ -30,7 +30,7 @@ pub enum BlinkError {
     ManifestParse {
         path: PathBuf,
         #[source]
-        source: serde_json::Error,
+        source: blink_parser::ParserError,
     },
 
     #[error("no recognizable project found in {0}")]

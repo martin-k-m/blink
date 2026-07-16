@@ -10,9 +10,11 @@ description = "Workspace root crate; hosts Blink's cross-crate integration tests
 [dev-dependencies]
 blink-core = { workspace = true }
 blink-analyzer = { workspace = true }
+blink-report = { workspace = true }
 assert_cmd = { workspace = true }
 predicates = { workspace = true }
 tempfile = { workspace = true }
+serde_json = { workspace = true }
 
 [workspace]
 resolver = "2"
@@ -22,11 +24,15 @@ members = [
     "crates/blink-analyzer",
     "crates/blink-cache",
     "crates/blink-server",
+    "crates/blink-parser",
+    "crates/blink-report",
+    "crates/blink-plugin",
+    "crates/blink-dashboard",
 ]
 exclude = ["examples"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Blink Contributors"]
@@ -39,10 +45,14 @@ keywords = ["cli", "devtools", "build-tool", "dev-server", "watcher"]
 categories = ["command-line-utilities", "development-tools"]
 
 [workspace.dependencies]
-blink-core = { path = "crates/blink-core", version = "0.1.0" }
-blink-analyzer = { path = "crates/blink-analyzer", version = "0.1.0" }
-blink-cache = { path = "crates/blink-cache", version = "0.1.0" }
-blink-server = { path = "crates/blink-server", version = "0.1.0" }
+blink-core = { path = "crates/blink-core", version = "0.2.0" }
+blink-analyzer = { path = "crates/blink-analyzer", version = "0.2.0" }
+blink-cache = { path = "crates/blink-cache", version = "0.2.0" }
+blink-server = { path = "crates/blink-server", version = "0.2.0" }
+blink-parser = { path = "crates/blink-parser", version = "0.2.0" }
+blink-report = { path = "crates/blink-report", version = "0.2.0" }
+blink-plugin = { path = "crates/blink-plugin", version = "0.2.0" }
+blink-dashboard = { path = "crates/blink-dashboard", version = "0.2.0" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "time", "signal", "sync"] }
 rayon = "1.10"
@@ -63,6 +73,10 @@ assert_cmd = "2"
 predicates = "3"
 ureq = { version = "2", features = ["json"] }
 semver = "1"
+indicatif = "0.17"
+comfy-table = "7"
+console = "0.15"
+ratatui = "0.29"
 
 [profile.release]
 opt-level = 3

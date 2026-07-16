@@ -104,3 +104,93 @@ fn config_exists_reports_presence() {
 
     assert!(BlinkConfig::exists(dir.path()));
 }
+
+#[test]
+fn detects_cargo_workspace() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "Cargo.toml",
+        "[workspace]\nmembers = [\"crates/*\"]\n",
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+
+    assert!(project.is_workspace);
+    assert_eq!(project.config_file, "Cargo.toml");
+}
+
+#[test]
+fn detects_vite_only_when_no_other_framework_present() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "package.json",
+        r#"{"name": "sample", "devDependencies": {"vite": "^5.0.0"}}"#,
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+
+    assert_eq!(project.framework, Framework::Vite);
+}
+
+#[test]
+fn react_takes_priority_over_vite() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "package.json",
+        r#"{"name": "sample", "dependencies": {"react": "^18.0.0"}, "devDependencies": {"vite": "^5.0.0"}}"#,
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+
+    assert_eq!(project.framework, Framework::React);
+}
+
+#[test]
+fn detects_python_virtualenv() {
+    let dir = TempDir::new().unwrap();
+    write(&dir, "requirements.txt", "flask==2.3.0\n");
+    fs::create_dir_all(dir.path().join(".venv")).unwrap();
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+
+    assert!(project.has_virtualenv);
+}
+
+#[test]
+fn custom_ignore_list_excludes_extra_directories_from_file_count() {
+    let without_ignore_dir = TempDir::new().unwrap();
+    write(
+        &without_ignore_dir,
+        "Cargo.toml",
+        "[package]\nname = \"sample\"\n",
+    );
+    write(&without_ignore_dir, "src/main.rs", "fn main() {}");
+    write(&without_ignore_dir, "vendor/some_file.rs", "// vendored");
+    let without_ignore = ProjectDetector::new()
+        .detect(without_ignore_dir.path())
+        .unwrap();
+    assert_eq!(without_ignore.file_count, 3);
+
+    let with_ignore_dir = TempDir::new().unwrap();
+    write(
+        &with_ignore_dir,
+        "Cargo.toml",
+        "[package]\nname = \"sample\"\n",
+    );
+    write(&with_ignore_dir, "src/main.rs", "fn main() {}");
+    write(&with_ignore_dir, "vendor/some_file.rs", "// vendored");
+    write(
+        &with_ignore_dir,
+        "blink.toml",
+        "[project]\nname = \"sample\"\nignore = [\"vendor\"]\n",
+    );
+    let with_ignore = ProjectDetector::new()
+        .detect(with_ignore_dir.path())
+        .unwrap();
+
+    // Cargo.toml, src/main.rs, blink.toml — vendor/some_file.rs excluded.
+    assert_eq!(with_ignore.file_count, 3);
+}

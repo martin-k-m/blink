@@ -1,5 +1,15 @@
 pub mod analyze;
+pub mod benchmark;
 pub mod build;
+pub mod ci;
+pub mod dashboard;
+pub mod deps;
+pub mod health;
 pub mod init;
+pub mod plugins;
+pub mod recommend;
+pub mod report;
 pub mod run;
 pub mod scan;
+pub mod security;
+pub mod watch;

@@ -21,6 +21,17 @@ examples/**/node_modules/
 examples/**/target/
 examples/**/Cargo.lock
 
+# Test fixtures under tests/fixtures/ (rust_project's Cargo.lock is a
+# deliberate hand-written fixture and is tracked, not ignored)
+tests/fixtures/**/node_modules/
+tests/fixtures/rust_project/target/
+
+# npm package: the postinstall-downloaded binary and npm's own metadata
+# never belong in source control.
+packages/*/node_modules/
+packages/*/bin/native/
+packages/*/package-lock.json
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

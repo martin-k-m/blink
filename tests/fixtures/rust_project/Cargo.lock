@@ -1,0 +1,20 @@
+# This lockfile is a hand-written fixture, not the output of `cargo generate-lockfile`.
+# It exists purely to give the analyzer a deterministic duplicate-version scenario to detect.
+version = 3
+
+[[package]]
+name = "rust-project-fixture"
+version = "0.1.0"
+dependencies = ["serde"]
+
+[[package]]
+name = "serde"
+version = "1.0.190"
+
+[[package]]
+name = "syn"
+version = "1.0.109"
+
+[[package]]
+name = "syn"
+version = "2.0.48"

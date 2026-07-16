@@ -111,3 +111,114 @@ fn offline_analysis_never_reports_outdated_packages() {
     assert!(!report.outdated_checked);
     assert!(report.outdated.is_empty());
 }
+
+#[test]
+fn dependency_counts_without_lockfile_have_no_transitive_count() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "package.json",
+        r#"{"name": "sample", "dependencies": {"react": "^18.0.0"}}"#,
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+    let report = Analyzer::new().analyze(&project, dir.path());
+
+    assert_eq!(report.dependency_counts.direct, 1);
+    assert_eq!(report.dependency_counts.transitive, None);
+}
+
+#[test]
+fn dependency_counts_derive_transitive_from_lockfile() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "Cargo.toml",
+        r#"
+            [package]
+            name = "sample"
+            version = "0.1.0"
+
+            [dependencies]
+            serde = "1"
+        "#,
+    );
+    write(
+        &dir,
+        "Cargo.lock",
+        r#"
+            [[package]]
+            name = "serde"
+            version = "1.0.190"
+
+            [[package]]
+            name = "serde_derive"
+            version = "1.0.190"
+
+            [[package]]
+            name = "syn"
+            version = "2.0.0"
+        "#,
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+    let report = Analyzer::new().analyze(&project, dir.path());
+
+    assert_eq!(report.dependency_counts.direct, 1);
+    assert_eq!(report.dependency_counts.transitive, Some(2));
+}
+
+#[test]
+fn health_score_starts_at_100_with_no_issues() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "package.json",
+        r#"{"name": "sample", "dependencies": {"react": "^18.0.0"}}"#,
+    );
+    write(
+        &dir,
+        "src/App.jsx",
+        "import React from 'react';\nexport default function App() { return null; }",
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+    let report = Analyzer::new().analyze(&project, dir.path());
+
+    assert_eq!(report.health_score(), 100);
+}
+
+#[test]
+fn health_score_drops_with_duplicate_versions() {
+    let dir = TempDir::new().unwrap();
+    write(
+        &dir,
+        "Cargo.toml",
+        r#"
+            [package]
+            name = "sample"
+            version = "0.1.0"
+
+            [dependencies]
+            serde = "1"
+        "#,
+    );
+    write(
+        &dir,
+        "Cargo.lock",
+        r#"
+            [[package]]
+            name = "syn"
+            version = "1.0.0"
+
+            [[package]]
+            name = "syn"
+            version = "2.0.0"
+        "#,
+    );
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+    let report = Analyzer::new().analyze(&project, dir.path());
+
+    assert!(report.health_score() < 100);
+}

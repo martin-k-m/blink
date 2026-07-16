@@ -20,7 +20,9 @@ pub fn run(args: BuildArgs) -> Result<()> {
         .unwrap_or(true);
 
     if !cache_enabled {
+        let spinner = ui::spinner("Scanning files...");
         let current = Cache::scan(&args.path);
+        spinner.finish_and_clear();
         ui::step(format!(
             "Scanned {} files (caching disabled in blink.toml)",
             current.file_count()
@@ -34,7 +36,9 @@ pub fn run(args: BuildArgs) -> Result<()> {
 
     let previous = Cache::load(&args.path)
         .with_context(|| format!("could not read cache in {}", args.path.display()))?;
+    let spinner = ui::spinner("Hashing files...");
     let current = Cache::scan(&args.path);
+    spinner.finish_and_clear();
 
     match &previous {
         Some(prev) => {

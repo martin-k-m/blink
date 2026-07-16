@@ -1,0 +1,19 @@
+[package]
+name = "blink-plugin"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Subprocess-based plugin discovery and execution for Blink, in the style of cargo/git subcommands."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

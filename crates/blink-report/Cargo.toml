@@ -1,0 +1,23 @@
+[package]
+name = "blink-report"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Report formatting for Blink: health scoring, tables, and JSON export."
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+blink-core = { workspace = true }
+blink-analyzer = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+comfy-table = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

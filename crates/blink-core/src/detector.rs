@@ -1,14 +1,16 @@
-use std::collections::BTreeMap;
 use std::path::Path;
 
-use serde::Deserialize;
+use blink_parser::RawDependency;
 use walkdir::WalkDir;
 
+use crate::config::BlinkConfig;
 use crate::error::{BlinkError, Result};
 use crate::project::{Dependency, Framework, Language, PackageManager, Project};
 
-/// Directory names that are never counted or descended into during a scan.
-const IGNORED_DIRS: &[&str] = &[
+/// Directory names that are never counted or descended into during a scan,
+/// regardless of `blink.toml`. Projects can add to this list via
+/// `[project].ignore`; see [`effective_ignored_dirs`].
+pub const DEFAULT_IGNORED_DIRS: &[&str] = &[
     ".git",
     "node_modules",
     "target",
@@ -23,37 +25,25 @@ const IGNORED_DIRS: &[&str] = &[
     "venv",
 ];
 
+/// The directory names to skip while walking `root`: [`DEFAULT_IGNORED_DIRS`]
+/// plus whatever `root`/`blink.toml`'s `[project].ignore` adds. Missing or
+/// unparsable config is treated as "no extra ignores" rather than an error.
+pub fn effective_ignored_dirs(root: &Path) -> Vec<String> {
+    let mut dirs: Vec<String> = DEFAULT_IGNORED_DIRS.iter().map(|s| s.to_string()).collect();
+    if let Ok(config) = BlinkConfig::load(root) {
+        for entry in config.project.ignore {
+            if !dirs.contains(&entry) {
+                dirs.push(entry);
+            }
+        }
+    }
+    dirs
+}
+
 /// Detects the language, framework, package manager, and dependency set of a
 /// project by inspecting its manifest files and directory layout.
 #[derive(Debug, Default)]
 pub struct ProjectDetector;
-
-#[derive(Debug, Deserialize, Default)]
-struct PackageJson {
-    #[serde(default)]
-    name: Option<String>,
-    #[serde(default)]
-    dependencies: BTreeMap<String, String>,
-    #[serde(default)]
-    #[serde(rename = "devDependencies")]
-    dev_dependencies: BTreeMap<String, String>,
-}
-
-#[derive(Debug, Deserialize, Default)]
-struct CargoManifest {
-    #[serde(default)]
-    package: Option<CargoPackage>,
-    #[serde(default)]
-    dependencies: BTreeMap<String, toml::Value>,
-    #[serde(default)]
-    #[serde(rename = "dev-dependencies")]
-    dev_dependencies: BTreeMap<String, toml::Value>,
-}
-
-#[derive(Debug, Deserialize, Default)]
-struct CargoPackage {
-    name: Option<String>,
-}
 
 impl ProjectDetector {
     pub fn new() -> Self {
@@ -69,7 +59,8 @@ impl ProjectDetector {
             return Err(BlinkError::NotADirectory(dir.to_path_buf()));
         }
 
-        let file_count = count_files(dir);
+        let ignored_dirs = effective_ignored_dirs(dir);
+        let file_count = count_files(dir, &ignored_dirs);
 
         if dir.join("Cargo.toml").is_file() {
             return self.detect_rust(dir, file_count);
@@ -90,30 +81,14 @@ impl ProjectDetector {
             path: manifest_path.clone(),
             source,
         })?;
-        let manifest: CargoManifest = toml::from_str(&raw).unwrap_or_default();
+        let manifest = blink_parser::parse_cargo_manifest(&raw);
 
-        let name = manifest
-            .package
-            .and_then(|p| p.name)
-            .unwrap_or_else(|| fallback_name(dir));
-
-        let mut dependencies: Vec<Dependency> = manifest
+        let name = manifest.name.unwrap_or_else(|| fallback_name(dir));
+        let dependencies = manifest
             .dependencies
             .into_iter()
-            .map(|(name, value)| Dependency {
-                name,
-                version: cargo_dep_version(&value),
-                dev: false,
-            })
+            .map(to_dependency)
             .collect();
-        dependencies.extend(manifest.dev_dependencies.into_iter().map(|(name, value)| {
-            Dependency {
-                name,
-                version: cargo_dep_version(&value),
-                dev: true,
-            }
-        }));
-        dependencies.sort_by(|a, b| a.name.cmp(&b.name));
 
         Ok(Project {
             name,
@@ -123,6 +98,9 @@ impl ProjectDetector {
             package_manager: PackageManager::Cargo,
             dependencies,
             file_count,
+            config_file: "Cargo.toml".to_string(),
+            is_workspace: manifest.is_workspace,
+            has_virtualenv: false,
         })
     }
 
@@ -132,54 +110,36 @@ impl ProjectDetector {
             path: manifest_path.clone(),
             source,
         })?;
-        let manifest: PackageJson =
-            serde_json::from_str(&raw).map_err(|source| BlinkError::ManifestParse {
+        let manifest =
+            blink_parser::parse_package_json(&raw).map_err(|source| BlinkError::ManifestParse {
                 path: manifest_path.clone(),
                 source,
             })?;
 
-        let mut dependencies: Vec<Dependency> = manifest
-            .dependencies
-            .iter()
-            .map(|(name, version)| Dependency {
-                name: name.clone(),
-                version: version.clone(),
-                dev: false,
-            })
-            .collect();
-        dependencies.extend(
-            manifest
-                .dev_dependencies
-                .iter()
-                .map(|(name, version)| Dependency {
-                    name: name.clone(),
-                    version: version.clone(),
-                    dev: true,
-                }),
-        );
-        dependencies.sort_by(|a, b| a.name.cmp(&b.name));
-
-        let has_dep = |name: &str| {
-            manifest.dependencies.contains_key(name) || manifest.dev_dependencies.contains_key(name)
-        };
-
-        let framework = if has_dep("next") {
+        // Vite is a build tool, not a UI framework, so it only gets reported
+        // when nothing more specific was detected (e.g. a vanilla Vite
+        // project) rather than overriding React/Vue/Svelte/Next, which are
+        // commonly used *with* Vite.
+        let framework = if manifest.has_dependency("next") {
             Framework::NextJs
-        } else if has_dep("react") {
+        } else if manifest.has_dependency("react") {
             Framework::React
-        } else if has_dep("vue") {
+        } else if manifest.has_dependency("vue") {
             Framework::Vue
-        } else if has_dep("svelte") {
+        } else if manifest.has_dependency("svelte") {
             Framework::Svelte
+        } else if manifest.has_dependency("vite") {
+            Framework::Vite
         } else {
             Framework::None
         };
 
-        let language = if dir.join("tsconfig.json").is_file() || has_dep("typescript") {
-            Language::TypeScript
-        } else {
-            Language::JavaScript
-        };
+        let language =
+            if dir.join("tsconfig.json").is_file() || manifest.has_dependency("typescript") {
+                Language::TypeScript
+            } else {
+                Language::JavaScript
+            };
 
         let package_manager = if dir.join("pnpm-lock.yaml").is_file() {
             PackageManager::Pnpm
@@ -190,7 +150,12 @@ impl ProjectDetector {
             PackageManager::Npm
         };
 
-        let name = manifest.name.unwrap_or_else(|| fallback_name(dir));
+        let name = manifest.name.clone().unwrap_or_else(|| fallback_name(dir));
+        let dependencies = manifest
+            .dependencies
+            .into_iter()
+            .map(to_dependency)
+            .collect();
 
         Ok(Project {
             name,
@@ -200,6 +165,9 @@ impl ProjectDetector {
             package_manager,
             dependencies,
             file_count,
+            config_file: "package.json".to_string(),
+            is_workspace: false,
+            has_virtualenv: false,
         })
     }
 
@@ -207,17 +175,25 @@ impl ProjectDetector {
         let mut dependencies = Vec::new();
 
         let requirements_path = dir.join("requirements.txt");
-        if requirements_path.is_file() {
+        let config_file = if requirements_path.is_file() {
             let raw =
                 std::fs::read_to_string(&requirements_path).map_err(|source| BlinkError::Io {
                     path: requirements_path.clone(),
                     source,
                 })?;
-            dependencies.extend(parse_requirements(&raw));
-        }
+            dependencies.extend(
+                blink_parser::parse_requirements_txt(&raw)
+                    .into_iter()
+                    .map(to_dependency),
+            );
+            "requirements.txt".to_string()
+        } else {
+            "pyproject.toml".to_string()
+        };
 
         // v0.1 doesn't yet distinguish pip/poetry/pipenv, so this is always Pip.
         let package_manager = PackageManager::Pip;
+        let has_virtualenv = dir.join(".venv").is_dir() || dir.join("venv").is_dir();
 
         Ok(Project {
             name: fallback_name(dir),
@@ -227,39 +203,19 @@ impl ProjectDetector {
             package_manager,
             dependencies,
             file_count,
+            config_file,
+            is_workspace: false,
+            has_virtualenv,
         })
     }
 }
 
-fn cargo_dep_version(value: &toml::Value) -> String {
-    match value {
-        toml::Value::String(s) => s.clone(),
-        toml::Value::Table(t) => t
-            .get("version")
-            .and_then(|v| v.as_str())
-            .unwrap_or("*")
-            .to_string(),
-        _ => "*".to_string(),
+fn to_dependency(raw: RawDependency) -> Dependency {
+    Dependency {
+        name: raw.name,
+        version: raw.version,
+        dev: raw.dev,
     }
-}
-
-fn parse_requirements(raw: &str) -> Vec<Dependency> {
-    raw.lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty() && !line.starts_with('#'))
-        .map(|line| {
-            let (name, version) = line
-                .split_once("==")
-                .or_else(|| line.split_once(">="))
-                .or_else(|| line.split_once("~="))
-                .unwrap_or((line, "*"));
-            Dependency {
-                name: name.trim().to_string(),
-                version: version.trim().to_string(),
-                dev: false,
-            }
-        })
-        .collect()
 }
 
 fn fallback_name(dir: &Path) -> String {
@@ -270,14 +226,14 @@ fn fallback_name(dir: &Path) -> String {
         .unwrap_or_else(|| "unnamed-project".to_string())
 }
 
-/// Count all files under `dir`, skipping directories in [`IGNORED_DIRS`].
-fn count_files(dir: &Path) -> usize {
+/// Count all files under `dir`, skipping directories named in `ignored_dirs`.
+fn count_files(dir: &Path, ignored_dirs: &[String]) -> usize {
     WalkDir::new(dir)
         .into_iter()
         .filter_entry(|entry| {
             if entry.file_type().is_dir() {
                 let name = entry.file_name().to_string_lossy();
-                !IGNORED_DIRS.contains(&name.as_ref())
+                !ignored_dirs.iter().any(|d| d == name.as_ref())
             } else {
                 true
             }

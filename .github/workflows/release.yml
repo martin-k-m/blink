@@ -7,28 +7,35 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  BIN_NAME: blink
 
 jobs:
   build:
-    name: Build (${{ matrix.target }})
+    name: Build (${{ matrix.asset_name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Asset names match packages/blink-cli/scripts/platform.js's
+          # TARGETS map exactly — the npm installer downloads these by
+          # name, so the two must stay in sync.
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            archive: tar.gz
+            asset_name: blink-linux-x64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            asset_name: blink-linux-arm64
+            linker_package: gcc-aarch64-linux-gnu
+            linker: aarch64-linux-gnu-gcc
           - os: macos-latest
             target: x86_64-apple-darwin
-            archive: tar.gz
+            asset_name: blink-macos-x64
           - os: macos-latest
             target: aarch64-apple-darwin
-            archive: tar.gz
+            asset_name: blink-macos-arm64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            archive: zip
+            asset_name: blink-windows-x64.exe
     steps:
       - uses: actions/checkout@v4
 
@@ -40,26 +47,46 @@ jobs:
         with:
           key: ${{ matrix.target }}
 
+      - name: Install cross-compilation linker
+        if: matrix.linker_package != ''
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.linker_package }}
+
+      - name: Configure cross-compilation linker
+        if: matrix.linker != ''
+        run: |
+          target_env=$(echo "${{ matrix.target }}" | tr 'a-z-' 'A-Z_')
+          echo "CARGO_TARGET_${target_env}_LINKER=${{ matrix.linker }}" >> "$GITHUB_ENV"
+        shell: bash
+
       - name: Build release binary
         run: cargo build --release --locked -p blink-cli --target ${{ matrix.target }}
 
-      - name: Package (unix)
-        if: matrix.archive == 'tar.gz'
+      - name: Stage binary under its release asset name
+        shell: bash
         run: |
-          cd target/${{ matrix.target }}/release
-          tar czf ${{ github.workspace }}/${{ env.BIN_NAME }}-${{ matrix.target }}.tar.gz ${{ env.BIN_NAME }}
+          mkdir -p dist
+          src="target/${{ matrix.target }}/release/blink"
+          if [[ "${{ matrix.asset_name }}" == *.exe ]]; then
+            src="${src}.exe"
+          fi
+          cp "$src" "dist/${{ matrix.asset_name }}"
 
-      - name: Package (windows)
-        if: matrix.archive == 'zip'
-        shell: pwsh
+      - name: Checksum
+        shell: bash
         run: |
-          Compress-Archive -Path target/${{ matrix.target }}/release/${{ env.BIN_NAME }}.exe `
-            -DestinationPath ${{ env.BIN_NAME }}-${{ matrix.target }}.zip
+          cd dist
+          if command -v sha256sum >/dev/null; then
+            sha256sum "${{ matrix.asset_name }}" > "${{ matrix.asset_name }}.sha256"
+          else
+            shasum -a 256 "${{ matrix.asset_name }}" > "${{ matrix.asset_name }}.sha256"
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BIN_NAME }}-${{ matrix.target }}
-          path: ${{ env.BIN_NAME }}-${{ matrix.target }}.*
+          name: ${{ matrix.asset_name }}
+          path: |
+            dist/${{ matrix.asset_name }}
+            dist/${{ matrix.asset_name }}.sha256
 
   release:
     name: Publish release

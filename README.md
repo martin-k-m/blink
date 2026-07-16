@@ -9,34 +9,62 @@
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
 
 Blink detects what kind of project you're in, reports on its dependency
-health, serves it locally with instant reload on file changes, and tracks a
-content-hash build cache — all from one small, fast binary.
+health with a documented (not invented) scoring system, serves it locally
+with live reload, checks for known vulnerabilities, and gives you an
+interactive terminal dashboard — all from one small, fast binary you
+install with `npm install -g blink-cli`.
+
+New here? Start with [`docs/getting-started.md`](docs/getting-started.md).
 
 ## Features
 
-- **Project detection** — recognizes Rust, TypeScript, JavaScript, and
-  Python projects by their manifests (`Cargo.toml`, `package.json`,
-  `requirements.txt` / `pyproject.toml`), along with the framework
-  (React, Next.js, Vue, Svelte, Cargo) and package manager (npm, pnpm,
-  yarn, cargo, pip) in use.
-- **Dependency analysis** — a direct dependency graph, unused-dependency
-  detection via source scanning, duplicate-version detection via lockfile
-  parsing, large-dependency flagging, and an opt-in registry check for
-  outdated packages.
-- **Dev server** — an async static file server with a debounced file
-  watcher; saving a file triggers a dependency-graph rebuild and cache
-  invalidation in milliseconds.
-- **Build cache** — SHA-256 content hashing so `blink build` can tell you
-  exactly what changed since the last run instead of treating every file
-  as new work.
+- **Project detection** — Rust, TypeScript/JavaScript, and Python
+  projects, detected from their manifests. Framework detection for React,
+  Next.js, Vue, Svelte, and Vite; Cargo workspaces and Python virtualenvs
+  too.
+- **Dependency analysis** — direct/transitive counts, unused-dependency
+  detection, duplicate-version detection, largest-installed-package
+  ranking (Rust and JS/TS both), and opt-in outdated-package /
+  vulnerability (OSV.dev) checks.
+- **A documented health score** — three independently measurable
+  sub-scores (dependencies, configuration, code organization), not an
+  invented number. See [`docs/analysis.md`](docs/analysis.md).
+- **Rule-based recommendations** — grouped into Performance/Maintenance/
+  Security, each rule tied to one concrete, checkable fact.
+- **A live dev server and dashboard** — an async static file server with
+  a debounced file watcher, plus an interactive `ratatui` terminal UI
+  that refreshes automatically on file changes.
+- **CI integration** — `blink ci` with pipeline-friendly exit codes
+  (0 pass / 1 warnings / 2 failure).
+- **A real plugin system** — subprocess-based, `cargo`/`git`-style: any
+  `blink-<name>` executable becomes `blink <name>`. No unsafe dynamic
+  loading, no fake registry. See [`docs/plugins.md`](docs/plugins.md).
+- **Multiple export formats** — JSON, Markdown, and self-contained HTML
+  reports (`blink report`).
+- **Two build caches** — a project-local content-hash cache (`blink
+  build`) and a global per-user analysis cache that makes repeated
+  `analyze`/`deps`/`health`/`ci` runs against an unchanged project fast.
+  `blink benchmark` measures the real difference.
 
-See [`docs/architecture.md`](docs/architecture.md) for how the five crates
-in this workspace fit together, and [`docs/roadmap.md`](docs/roadmap.md)
-for what's shipped versus planned.
+See [`docs/architecture.md`](docs/architecture.md) for how the nine
+crates in this workspace fit together, [`docs/analysis.md`](docs/analysis.md)
+for exactly what the analyzer measures (and where it's a heuristic), and
+[`docs/roadmap.md`](docs/roadmap.md) for what's shipped versus planned.
 
 ## Installation
 
-Blink isn't published to crates.io yet. Build it from source:
+```sh
+npm install -g blink-cli
+blink --version
+```
+
+This downloads the `blink` binary matching your platform from a
+[GitHub release](https://github.com/martin-k-m/blink/releases), verifies
+its checksum, and puts a `blink` command on your `PATH`. Supported:
+macOS (x64, arm64), Linux (x64, arm64), Windows (x64) — exactly the
+targets built by [`.github/workflows/release.yml`](.github/workflows/release.yml).
+
+Prefer building from source, or on an unsupported platform?
 
 ```sh
 git clone https://github.com/martin-k-m/blink.git
@@ -44,28 +72,9 @@ cd blink
 cargo install --path crates/blink-cli
 ```
 
-This installs a `blink` binary. Prebuilt binaries for Windows, macOS, and
-Linux are attached to each [GitHub release](https://github.com/martin-k-m/blink/releases)
-via the [release workflow](.github/workflows/release.yml).
-
 ## Usage
 
-### `blink init`
-
-Creates a `blink.toml` configuration for a project (the directory is
-created if it doesn't already exist):
-
-```
-$ blink init my-app
-
-⚡ Blink
-  Creating project...
-  ✓ Detected environment
-  ✓ Created configuration
-  ✓ Ready
-
-  Project initialized.
-```
+Full flag reference for every command: [`docs/cli.md`](docs/cli.md).
 
 ### `blink scan`
 
@@ -87,85 +96,77 @@ $ blink scan
 
 ### `blink analyze`
 
-Reports on dependency health and prints recommendations derived from what
-it actually found — nothing generic:
+Reports on dependency health — direct/transitive counts, a documented
+health score, the largest installed packages, and recommendations derived
+from what it actually found:
 
 ```
 $ blink analyze
 
-⚡ Blink Analysis Report
+⚡ Blink Analysis
+
+  Project           blink
+  Type              Cargo (Rust)
+  Files             76
+
+  Health
+    █████░░░░░ 48%
 
   Dependencies
-    ✓ Healthy packages: 9
-    ⚠ Duplicate versions: 3
+  ┌────────────┬───────┐
+  │ Metric     ┆ Count │
+  ╞════════════╪═══════╡
+  │ Direct     ┆ 5     │
+  │ Transitive ┆ 211   │
+  │ Healthy    ┆ 0     │
+  └────────────┴───────┘
+
+  Largest Packages
+  ┌────────────┬─────────┐
+  │ Package    ┆ Size    │
+  ╞════════════╪═════════╡
+  │ tempfile   ┆ 183.5KB │
+  │ predicates ┆ 131.8KB │
+  │ assert_cmd ┆ 113.9KB │
+  └────────────┴─────────┘
+
+  Potential Issues
+    ⚠ Duplicate package versions detected (13)
     - Outdated packages: unknown (run with --online to check)
 
-  Performance
-    Analysis time    7ms
-    Build output     not built yet
-
-  Recommendations
+  Suggestions
     → Deduplicate windows-sys (4 versions resolved: 0.48.0, 0.52.0, 0.59.0, 0.61.2)
     → Deduplicate windows-targets (2 versions resolved: 0.48.5, 0.52.6)
     → Deduplicate mio (2 versions resolved: 0.8.11, 1.2.2)
+
+  Performance
+    Analysis time    18ms
+    Build output     297.0MB
 ```
 
-Pass `--online` to additionally check crates.io / the npm registry for
-newer published versions. This is the only network call anywhere in
-Blink, and it's off by default.
+Pass `--online` to additionally check for outdated packages (`--json` for
+machine-readable output). Every field is real and documented — see
+[`docs/analysis.md`](docs/analysis.md).
 
-### `blink run`
+### Every other command
 
-Starts the dev server and file watcher:
+| Command | Purpose |
+| --- | --- |
+| `blink init` | Create a `blink.toml`. |
+| `blink deps` | Dependency counts, largest packages, issues. |
+| `blink health` | Health score with sub-scores. |
+| `blink recommend` | Categorized, rule-based recommendations. |
+| `blink run` | Dev server + file watcher. |
+| `blink watch` | Analysis-only live reload (no dev server). |
+| `blink build` | Cache-aware file scan. |
+| `blink ci` | Analysis with pipeline exit codes. |
+| `blink security` | OSV.dev vulnerability check. |
+| `blink report` | Export JSON/Markdown/HTML. |
+| `blink plugins` | List/install plugins. |
+| `blink benchmark` | Measure Blink's own performance. |
+| `blink dashboard` | Interactive terminal UI. |
 
-```
-$ blink run
-
-⚡ Blink Development Server
-  Starting...
-
-  ✓ Project detected
-  ✓ Dependencies loaded (12)
-  ✓ Server ready
-
-  Local             http://localhost:3000
-
-  Ready in: 2ms
-
-  Watching for file changes... (Ctrl+C to stop)
-
-src/App.tsx changed
-Blink:
-  ✓ Updated dependency graph
-  ✓ Cache invalidated for changed files
-  4ms
-```
-
-### `blink build`
-
-Runs a cache-aware build pass:
-
-```
-$ blink build
-
-⚡ Blink Build
-  Building...
-
-  ✓ Compared 45 files against cache
-
-  Cache
-    43 unchanged
-    2 changed
-    0 added
-    0 removed
-  ✓ Cache saved
-
-  Build complete in: 6ms
-```
-
-Every timing and count shown above is measured at run time — none of it
-is hardcoded. Run these commands against this repository yourself and
-you'll see your own numbers.
+Full reference with every flag: [`docs/cli.md`](docs/cli.md).
 
 ## Configuration
 
@@ -173,6 +174,7 @@ you'll see your own numbers.
 # blink.toml
 [project]
 name = "my-app"
+ignore = ["vendor"]
 
 [server]
 port = 3000
@@ -187,16 +189,14 @@ Full reference: [`docs/configuration.md`](docs/configuration.md).
 ## Architecture
 
 ```
-                    ┌─────────────┐
-                    │  blink-cli  │  clap commands, terminal UI
-                    └──────┬──────┘
-           ┌───────────────┼───────────────┬───────────────┐
-           ▼                ▼               ▼               ▼
-   ┌───────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-   │  blink-core   │ │blink-analyzer│ │ blink-cache │ │blink-server │
-   │  detection +  │ │  dependency  │ │  content-   │ │  dev server │
-   │  config       │ │  health      │ │  hash cache │ │  + watcher  │
-   └───────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+User → npm package (packages/blink-cli) → downloads binary → blink-cli
+                                                                  │
+        ┌──────────┬───────────┬─────────┬──────────┬───────────┼───────────┬────────────┐
+        ▼          ▼           ▼         ▼          ▼           ▼           ▼            ▼
+   blink-core  blink-      blink-cache blink-    blink-       blink-      blink-plugin  blink-dashboard
+   detection   analyzer    build +     server    report       parser      subprocess    ratatui TUI
+   + config    dependency  analysis    dev+watch formatting   manifest/   plugins
+               health      caching                            lockfile
 ```
 
 Details, data flow, and the reasoning behind each design decision live in
@@ -204,13 +204,15 @@ Details, data flow, and the reasoning behind each design decision live in
 
 ## Roadmap
 
-- **Phase 1 (shipped):** CLI, project scanner/detector, analyzer reports.
-- **Phase 2 (shipped):** dev server, file watching, change notifications.
-- **Phase 3 (partially shipped):** build caching is done; a real
-  optimization/bundling pass is not — `blink build` is currently a
-  cache-aware file scanner, not a bundler.
-- **Phase 4 (planned):** VS Code extension, plugin system, deeper
-  suggestions.
+- **v0.1–v0.2 (shipped):** CLI, project detection, analyzer, dev server,
+  build caching, health score, JSON export.
+- **v0.3–v0.4 (shipped):** npm distribution, config ignore list, expanded
+  detection, `deps`/`health`/`recommend`/`watch`/`ci`/`security`/`report`
+  commands, a global analysis cache, a real plugin system, an interactive
+  dashboard.
+- **v0.5 (planned):** a real build/optimization pipeline — `blink build`
+  is currently cache bookkeeping, not a bundler.
+- **v0.6 (planned):** VS Code extension, a plugin registry.
 
 Full detail in [`docs/roadmap.md`](docs/roadmap.md).
 
@@ -224,11 +226,24 @@ cargo clippy --workspace --all-targets -- -D warnings
 ```
 
 Integration tests live at the repository root in [`tests/`](tests) and run
-against the fixture projects in [`examples/`](examples) plus the built
-`blink` binary (via `assert_cmd`). Unit tests live alongside the code
-they test in each crate.
+against the showcase projects in [`examples/`](examples), the
+purpose-built fixtures in [`tests/fixtures/`](tests/fixtures) (each one
+exercises a specific analyzer behavior, e.g. a hand-written `Cargo.lock`
+with a deliberate duplicate version), and the built `blink` binary (via
+`assert_cmd`) — including a self-contained test of the plugin
+fallback-dispatch mechanism. Unit tests live alongside the code they test
+in each crate; `blink-dashboard`'s rendering is tested headlessly with
+`ratatui`'s `TestBackend`.
+
+The npm package (`packages/blink-cli`) has no Rust dependencies to test,
+but CI syntax-checks its scripts and runs a real `npm install` +
+postinstall + shim-execution pass against a locally built binary (see the
+`npm-package` job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)),
+so a broken installer script fails CI the same as broken Rust code would.
 
 ## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full guide. In short:
 
 1. Fork the repo and create a branch off `main`.
 2. Make your change. Add or update tests for it.
@@ -236,7 +251,9 @@ they test in each crate.
 4. Open a pull request describing what changed and why.
 
 Bug reports and feature requests are welcome via
-[GitHub Issues](https://github.com/martin-k-m/blink/issues).
+[GitHub Issues](https://github.com/martin-k-m/blink/issues). Please
+review our [Code of Conduct](CODE_OF_CONDUCT.md), and see
+[`SECURITY.md`](SECURITY.md) for how to report a vulnerability privately.
 
 ## License
 

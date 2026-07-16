@@ -1,40 +1,113 @@
 # Roadmap
 
-Blink is being built in phases. Each phase is meant to ship as a usable
-release on its own rather than as a stepping stone that only matters once
-everything is finished.
+Blink is being built in phases, each shipped as a usable release rather
+than a stepping stone that only matters once everything is finished. This
+file tracks releases (`v0.1`, `v0.2`, ...); it doesn't reuse "Phase N"
+numbering on its own, since that turned out to drift from how the work
+actually shipped — see the note at the bottom.
 
-## Phase 1 — MVP (shipped in v0.1)
+## v0.1 — MVP + developer loop (shipped)
 
 - [x] `blink init` / `blink scan` — manifest-based project detection for
       Rust, TypeScript/JavaScript, and Python projects.
 - [x] `blink analyze` — dependency graph, unused/duplicate detection, and
       an opt-in registry-backed outdated check.
-
-## Phase 2 — Developer loop (shipped in v0.1)
-
-- [x] `blink run` — an async dev server with a debounced file watcher.
-- [x] File change notifications that rebuild the dependency graph and
-      invalidate cache entries for changed files.
-
-## Phase 3 — Build system (partially shipped in v0.1)
-
+- [x] `blink run` — an async dev server with a debounced file watcher;
+      saving a file rebuilds the dependency graph and invalidates cache
+      entries for the changed files.
 - [x] `blink build` — content-hash caching so unchanged files are reported
       as such instead of being reprocessed.
-- [ ] An actual optimization/bundling pass (asset minification,
-      compression, code splitting). Today `blink build` is a cache-aware
-      file scanner, not a bundler — there's nothing here yet to optimize.
-- [ ] A persisted performance dashboard across builds.
 
-## Phase 4 — Ecosystem
+## v0.2 — Intelligent project analysis (shipped)
+
+- [x] Split `blink-parser` (manifest/lockfile *format* parsing) and
+      `blink-report` (output formatting) out of `blink-core`/`blink-analyzer`,
+      so file-format knowledge and presentation logic each live in one place.
+- [x] Direct/transitive dependency counts, largest-installed-package ranking
+      (now measured for Rust too, via the local Cargo registry cache — not
+      just JS/TS's `node_modules`).
+- [x] A documented, heuristic health score (`docs/analysis.md`) rendered as
+      a progress bar.
+- [x] `blink analyze --json` for machine-readable output.
+- [x] `indicatif` spinners (skipped automatically on non-interactive
+      output) and `comfy-table` tables for a more polished terminal report.
+- [x] Fixture projects under `tests/fixtures/` purpose-built to exercise
+      specific analyzer behavior (duplicate versions, unused dependencies,
+      Python detection) rather than relying solely on the showcase
+      projects in `examples/`.
+
+## v0.3 — Installable CLI (shipped)
+
+The "clone the repo to use it" → "install it like a real tool" milestone:
+
+- [x] `blink scan --verbose` — resolved path, matched manifest file, and
+      the effective ignore-directory list.
+- [x] `[project].ignore` in `blink.toml` — extra directories skipped
+      during scans/builds, on top of the built-in list.
+- [x] Expanded detection: Vite (only when no other framework was
+      detected — it's a build tool, not competing with React/Vue/etc.),
+      Python virtualenv presence, Cargo `[workspace]` detection.
+- [x] `packages/blink-cli` — the npm distribution package. `npm install
+      -g blink-cli` downloads the matching platform binary, verifies its
+      checksum, and installs a `blink` shim on `PATH`.
+- [x] `.github/workflows/release.yml` builds and checksums binaries for
+      linux-x64, linux-arm64, macos-x64, macos-arm64, and windows-x64 on
+      every `v*.*.*` tag.
+
+## v0.4 — Intelligent platform (shipped)
+
+- [x] `blink deps` / `blink health` / `blink recommend` — focused views
+      over the same analysis engine, rather than duplicated logic.
+- [x] `blink watch` — analysis-only live reload, without `run`'s dev
+      server.
+- [x] `blink ci` — pipeline-friendly exit codes (0 pass / 1 warnings / 2
+      failure).
+- [x] `blink security` — OSV.dev vulnerability lookups (opt-in, since it's
+      a network call).
+- [x] `blink report --json|--markdown|--html` — full document export, not
+      just the terminal view.
+- [x] A global, per-user analysis cache (separate from the project-local
+      build cache) so repeated `analyze`/`deps`/`health`/`ci` runs against
+      an unchanged project reuse the previous result. `blink benchmark`
+      measures the real difference.
+- [x] `blink-plugin` — a real subprocess-based plugin system (`blink
+      <name>` runs `blink-<name>` if installed), in the style of
+      `cargo`/`git`. No remote registry, no dynamic loading — see
+      [`docs/plugins.md`](plugins.md) for why.
+- [x] `blink dashboard` — an interactive `ratatui` terminal UI with live,
+      file-watcher-triggered refresh.
+
+## v0.5 — Blink Runtime (planned)
+
+This is where `blink build` stops being cache bookkeeping and starts being
+a real build tool:
+
+- [ ] An actual optimization/bundling pass (asset minification,
+      compression, code splitting). Today's `blink build` scans and hashes
+      files — there's nothing here yet to optimize.
+- [ ] A persisted performance dashboard across builds (distinct from
+      `blink dashboard`'s live single-run view).
+- [ ] AST-aware unused-dependency detection, replacing the current
+      substring scan (see the known limitation in `docs/analysis.md`).
+
+## v0.6 — Ecosystem (planned)
 
 - [ ] VS Code extension surfacing scan/analyze results inline.
-- [ ] A plugin system for framework-specific detection and build steps.
+- [ ] A plugin *registry* — `blink plugins install` currently only copies
+      a local file; there's no `blink plugins install <name>` fetching
+      from anywhere, because no registry exists yet.
 - [ ] Suggestions that go beyond dependency hygiene (e.g. flagging likely
-      dead code paths).
+      dead code paths, once the AST-aware analysis above lands).
 
-If you're picking this up: Phase 3's optimization pass is the biggest
-open gap between what the CLI's output implies ("Build") and what it
-currently does (cache bookkeeping). See
-[`docs/architecture.md`](architecture.md) for how the crates are wired
-together before starting there.
+## A note on phase numbering
+
+Earlier planning used "Phase 1–4" for, respectively: CLI+scanner,
+dev-server+watcher, build caching, and ecosystem work. In practice the
+first two shipped together in v0.1, "Phase 2" was reused for the
+intelligent-analysis work that became v0.2, and "Phase 3"/"Phase 4" were
+reused again for the installable-platform work that became v0.3/v0.4
+(installable CLI, then dashboard/plugins/security/caching/CI/benchmarking).
+Rather than keep patching numbering that's drifted repeatedly, this file
+tracks by release. If you're looking for "Phase 3" or "Phase 4" from an
+earlier conversation, that's v0.3/v0.4 above; the original "Phase 3:
+Blink Runtime" content (a real bundler) is now v0.5.

@@ -1,7 +1,7 @@
 use blink_core::Project;
 
 /// A single node in a [`DependencyGraph`]: one declared dependency.
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyNode {
     pub name: String,
     pub version: String,
@@ -13,7 +13,7 @@ pub struct DependencyNode {
 /// Blink builds this from the project's own manifest (direct dependencies
 /// only) rather than fetching a full transitive tree from a registry, so it
 /// stays fast, offline, and deterministic.
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyGraph {
     pub root: String,
     pub nodes: Vec<DependencyNode>,

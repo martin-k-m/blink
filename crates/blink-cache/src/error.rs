@@ -25,6 +25,11 @@ pub enum CacheError {
 
     #[error("failed to serialize cache: {0}")]
     Serialize(#[from] serde_json::Error),
+
+    #[error(
+        "could not determine a platform cache directory (no HOME/USERPROFILE/LOCALAPPDATA set)"
+    )]
+    NoCacheDir,
 }
 
 pub type Result<T> = std::result::Result<T, CacheError>;

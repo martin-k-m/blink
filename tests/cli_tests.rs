@@ -9,6 +9,13 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
+fn tests_fixture(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+}
+
 fn blink() -> Command {
     Command::cargo_bin("blink").expect("blink binary should build")
 }
@@ -50,8 +57,38 @@ fn analyze_reports_dependency_health() {
         .arg(fixture("react-app"))
         .assert()
         .success()
-        .stdout(predicate::str::contains("Blink Analysis Report"))
-        .stdout(predicate::str::contains("Healthy packages"));
+        .stdout(predicate::str::contains("Blink Analysis"))
+        .stdout(predicate::str::contains("Health"))
+        .stdout(predicate::str::contains("Dependencies"));
+}
+
+#[test]
+fn analyze_json_emits_valid_structured_output() {
+    let output = blink()
+        .arg("analyze")
+        .arg(fixture("react-app"))
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert_eq!(json["project"], "react-app-example");
+    assert!(json["dependencies"]["direct"].as_u64().unwrap() > 0);
+    assert!(json["health"]["score"].as_u64().is_some());
+}
+
+#[test]
+fn analyze_reports_duplicate_versions_from_fixture_lockfile() {
+    blink()
+        .arg("analyze")
+        .arg(tests_fixture("rust_project"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Duplicate package versions"))
+        .stdout(predicate::str::contains("syn"));
 }
 
 #[test]
@@ -69,6 +106,233 @@ fn init_creates_blink_toml() {
     let config = std::fs::read_to_string(project_dir.join("blink.toml")).unwrap();
     assert!(config.contains("name = \"my-app\""));
     assert!(config.contains("port = 3000"));
+}
+
+#[test]
+fn scan_verbose_reports_diagnostic_detail() {
+    blink()
+        .arg("scan")
+        .arg(fixture("rust-crate"))
+        .arg("--verbose")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Scanning"))
+        .stdout(predicate::str::contains("Configuration"))
+        .stdout(predicate::str::contains("Cargo.toml"))
+        .stdout(predicate::str::contains("Ignore rules in effect"));
+}
+
+#[test]
+fn deps_reports_direct_and_transitive_counts() {
+    blink()
+        .arg("deps")
+        .arg(tests_fixture("rust_project"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Direct"))
+        .stdout(predicate::str::contains("Transitive"));
+}
+
+#[test]
+fn health_reports_score_and_subscores() {
+    blink()
+        .arg("health")
+        .arg(fixture("react-app"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Score"))
+        .stdout(predicate::str::contains("Code Organization"))
+        .stdout(predicate::str::contains("Dependencies"))
+        .stdout(predicate::str::contains("Configuration"));
+}
+
+#[test]
+fn health_json_emits_valid_structured_output() {
+    let output = blink()
+        .arg("health")
+        .arg(fixture("react-app"))
+        .arg("--json")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert!(json["overall"].as_u64().is_some());
+    assert!(json["configuration"].as_u64().is_some());
+    assert!(json["code_organization"].as_u64().is_some());
+}
+
+#[test]
+fn recommend_groups_findings_into_categories() {
+    blink()
+        .arg("recommend")
+        .arg(fixture("rust-crate"))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Performance"))
+        .stdout(predicate::str::contains("Maintenance"))
+        .stdout(predicate::str::contains("Security"))
+        .stdout(predicate::str::contains("run with --online to check"));
+}
+
+#[test]
+fn ci_passes_with_no_warnings_on_a_clean_fixture() {
+    blink()
+        .arg("ci")
+        .arg(fixture("rust-crate"))
+        .assert()
+        .code(predicate::in_iter([0, 1]))
+        .stdout(predicate::str::contains("Blink CI Report"))
+        .stdout(predicate::str::contains("Issues"));
+}
+
+#[test]
+fn ci_exits_2_when_project_cannot_be_detected() {
+    let dir = tempfile::TempDir::new().unwrap();
+
+    blink().arg("ci").arg(dir.path()).assert().code(2);
+}
+
+#[test]
+fn report_markdown_includes_expected_sections() {
+    blink()
+        .arg("report")
+        .arg(fixture("rust-crate"))
+        .arg("--markdown")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("# Blink Project Report"))
+        .stdout(predicate::str::contains("## Dependencies"));
+}
+
+#[test]
+fn report_html_writes_a_self_contained_page_to_output_file() {
+    let dir = tempfile::TempDir::new().unwrap();
+    let output = dir.path().join("report.html");
+
+    blink()
+        .arg("report")
+        .arg(fixture("rust-crate"))
+        .arg("--html")
+        .arg("--output")
+        .arg(&output)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Written to"));
+
+    let html = std::fs::read_to_string(&output).unwrap();
+    assert!(html.starts_with("<!doctype html>"));
+    assert!(html.contains("Blink Project Report"));
+}
+
+#[test]
+fn report_defaults_to_json() {
+    let output = blink()
+        .arg("report")
+        .arg(fixture("rust-crate"))
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let json: serde_json::Value = serde_json::from_slice(&output).expect("valid JSON output");
+    assert_eq!(json["project"], "rust-crate-example");
+}
+
+#[test]
+fn plugins_lists_installed_plugins_or_says_none_found() {
+    blink()
+        .arg("plugins")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Blink Plugins"));
+}
+
+#[test]
+fn plugins_install_copies_executable_into_managed_directory() {
+    let source_dir = tempfile::TempDir::new().unwrap();
+    let home_dir = tempfile::TempDir::new().unwrap();
+    let source = source_dir.path().join("my-tool");
+    std::fs::write(&source, b"fake executable bytes").unwrap();
+
+    blink()
+        .env("HOME", home_dir.path())
+        .env("USERPROFILE", home_dir.path())
+        .arg("plugins")
+        .arg("install")
+        .arg(&source)
+        .arg("--name")
+        .arg("mytool")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Installed 'mytool'"));
+
+    let expected_name = if cfg!(windows) {
+        "blink-mytool.exe"
+    } else {
+        "blink-mytool"
+    };
+    let installed = home_dir
+        .path()
+        .join(".blink")
+        .join("plugins")
+        .join(expected_name);
+    assert!(installed.is_file());
+}
+
+#[test]
+fn benchmark_reports_all_four_measurements() {
+    blink()
+        .arg("benchmark")
+        .arg(fixture("rust-crate"))
+        .arg("--runs")
+        .arg("1")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Startup"))
+        .stdout(predicate::str::contains("Scan"))
+        .stdout(predicate::str::contains("Cold Analysis"))
+        .stdout(predicate::str::contains("Cached Analysis"));
+}
+
+#[test]
+fn unknown_subcommand_falls_back_to_an_installed_plugin() {
+    let home_dir = tempfile::TempDir::new().unwrap();
+    let plugins_dir = home_dir.path().join(".blink").join("plugins");
+    std::fs::create_dir_all(&plugins_dir).unwrap();
+
+    // Install a copy of `blink` itself as a plugin: running `blink
+    // selftest --version` should transparently exec it, which (being the
+    // same binary) prints the same `blink <version>` line `blink
+    // --version` does. This exercises the real fallback-dispatch path in
+    // main.rs, not just plugin discovery/installation in isolation.
+    let blink_exe = assert_cmd::cargo::cargo_bin("blink");
+    let plugin_name = if cfg!(windows) {
+        "blink-selftest.exe"
+    } else {
+        "blink-selftest"
+    };
+    let plugin_path = plugins_dir.join(plugin_name);
+    std::fs::copy(&blink_exe, &plugin_path).unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = std::fs::metadata(&plugin_path).unwrap().permissions();
+        perms.set_mode(perms.mode() | 0o111);
+        std::fs::set_permissions(&plugin_path, perms).unwrap();
+    }
+
+    blink()
+        .env("HOME", home_dir.path())
+        .env("USERPROFILE", home_dir.path())
+        .arg("selftest")
+        .arg("--version")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("blink "));
 }
 
 #[test]

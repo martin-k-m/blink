@@ -44,3 +44,36 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --workspace --all-targets
       - run: cargo test --workspace
+
+  npm-package:
+    name: npm package sanity check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax-check installer scripts
+        run: |
+          node --check packages/blink-cli/scripts/platform.js
+          node --check packages/blink-cli/scripts/install.js
+          node --check packages/blink-cli/bin/blink.js
+
+      - name: Build the binary the installer will use
+        run: cargo build -p blink-cli
+
+      - name: npm install against the local binary (no GitHub release needed)
+        working-directory: packages/blink-cli
+        run: npm install
+        env:
+          BLINK_LOCAL_BIN: ${{ github.workspace }}/target/debug/blink
+
+      - name: Run through the installed shim
+        working-directory: packages/blink-cli
+        run: |
+          version=$(node bin/blink.js --version)
+          echo "blink.js --version => $version"
+          echo "$version" | grep -q "^blink "

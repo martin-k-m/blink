@@ -54,12 +54,12 @@ pub fn render_html(project: &Project, report: &AnalysisReport, health: &HealthRe
 <title>Blink Project Report: {name}</title>
 <style>
   body {{ background: #0b0b0c; color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }}
-  h1 {{ color: #ff8a00; }}
+  h1 {{ color: #ff2d8d; }}
   h2 {{ border-bottom: 1px solid #333; padding-bottom: 0.25rem; }}
   table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; }}
   td, th {{ border: 1px solid #333; padding: 0.4rem 0.6rem; text-align: left; }}
   .bar {{ background: #222; border-radius: 4px; overflow: hidden; height: 1.25rem; margin: 0.5rem 0; }}
-  .bar-fill {{ background: #ff8a00; height: 100%; }}
+  .bar-fill {{ background: #ff2d8d; height: 100%; }}
   .meta {{ color: #9a9a9a; }}
 </style>
 </head>

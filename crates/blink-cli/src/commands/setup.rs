@@ -48,7 +48,7 @@ pub fn run(args: SetupArgs) -> Result<()> {
     }
 
     if let Some(cmd) = &install {
-        println!("  {} {cmd}", "\u{25b6}".truecolor(255, 138, 0));
+        println!("  {} {cmd}", "\u{25b6}".truecolor(255, 45, 141));
         let status = proc::run_shell(cmd, &args.path)
             .with_context(|| format!("failed to launch `{cmd}`"))?;
         if !status.success() {

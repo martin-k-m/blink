@@ -83,7 +83,7 @@ fn render_terminal(graph: &blink_context::ContextGraph) {
             println!(
                 "    {:<width$} {} {}  {}",
                 edge.from,
-                "\u{2192}".truecolor(255, 138, 0),
+                "\u{2192}".truecolor(255, 45, 141),
                 edge.to.bold(),
                 format!("({})", edge.count).dimmed(),
                 width = width

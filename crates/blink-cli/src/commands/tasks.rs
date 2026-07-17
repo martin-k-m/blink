@@ -96,7 +96,7 @@ pub fn profile(args: ProfileArgs) -> Result<()> {
     }
 
     for command in &profile.commands {
-        println!("  {} {command}", "\u{25b6}".truecolor(255, 138, 0));
+        println!("  {} {command}", "\u{25b6}".truecolor(255, 45, 141));
         let status = proc::run_shell(command, &args.path)
             .with_context(|| format!("failed to launch `{command}`"))?;
         if !status.success() {

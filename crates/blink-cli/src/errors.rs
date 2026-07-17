@@ -12,7 +12,7 @@ use colored::Colorize;
 
 /// Print a failure report for `err` to stderr.
 pub fn render(err: &anyhow::Error) {
-    let bolt = "\u{26a1}".truecolor(255, 138, 0).bold();
+    let bolt = "\u{26a1}".truecolor(255, 45, 141).bold();
 
     match find_blink_error(err) {
         Some(blink) => {
@@ -29,7 +29,7 @@ pub fn render(err: &anyhow::Error) {
                 eprintln!();
                 eprintln!("  {}", "Possible fixes:".dimmed());
                 for fix in advice.fixes {
-                    eprintln!("    {} {fix}", "\u{2192}".truecolor(255, 138, 0));
+                    eprintln!("    {} {fix}", "\u{2192}".truecolor(255, 45, 141));
                 }
             }
             eprintln!();

@@ -35,7 +35,7 @@ pub fn run(args: CheckArgs) -> Result<()> {
     for step in &steps {
         println!(
             "  {} {}  {}",
-            "\u{25b6}".truecolor(255, 138, 0),
+            "\u{25b6}".truecolor(255, 45, 141),
             step.label.bold(),
             step.command.dimmed()
         );

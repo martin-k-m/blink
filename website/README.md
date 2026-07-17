@@ -23,4 +23,4 @@ python -m http.server -d website 8000
 
 It's a static page. To publish via GitHub Pages, point Pages at this
 directory (or copy `index.html` to the Pages source). Brand: near-black
-`#0b0b0c` ground, `#ff8a00` accent, the 👁️ mark.
+`#0b0b0c` ground, `#ff2d8d` pink accent, the 👁️ mark.

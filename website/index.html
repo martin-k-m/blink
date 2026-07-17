@@ -16,9 +16,9 @@
     --text: #ecebe8;
     --muted: #8b877e;
     --muted-2: #6a675f;
-    --accent: #ff8a00;
-    --accent-soft: rgba(255, 138, 0, 0.14);
-    --accent-line: rgba(255, 138, 0, 0.30);
+    --accent: #ff2d8d;
+    --accent-soft: rgba(255, 45, 141, 0.14);
+    --accent-line: rgba(255, 45, 141, 0.30);
     --good: #55c26a;
     --warn: #e5b23c;
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -61,7 +61,7 @@
   }
   .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; font-size: 17px; }
-  .brand .eye { font-size: 20px; filter: drop-shadow(0 0 10px rgba(255,138,0,0.35)); }
+  .brand .eye { font-size: 20px; filter: drop-shadow(0 0 10px rgba(255,45,141,0.35)); }
   .nav-links { display: flex; align-items: center; gap: 26px; }
   .nav-links a { color: var(--muted); font-size: 14px; transition: color .15s; }
   .nav-links a:hover { color: var(--text); }
@@ -102,7 +102,7 @@
     padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 15px;
     border: 1px solid transparent; transition: transform .12s, box-shadow .2s, border-color .15s;
   }
-  .btn-primary { background: var(--accent); color: #120a00; box-shadow: 0 6px 24px -8px rgba(255,138,0,0.6); }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 24px -8px rgba(255,45,141,0.6); }
   .btn-primary:hover { transform: translateY(-1px); }
   .btn-ghost { border-color: var(--line-2); color: var(--text); }
   .btn-ghost:hover { border-color: var(--accent); }
@@ -111,7 +111,7 @@
     position: relative; aspect-ratio: 1 / 1; width: 100%;
     border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
     background:
-      radial-gradient(120% 120% at 70% 20%, rgba(255,138,0,0.10), transparent 55%),
+      radial-gradient(120% 120% at 70% 20%, rgba(255,45,141,0.10), transparent 55%),
       linear-gradient(180deg, #101012, #0c0c0e);
   }
   .hero-canvas-wrap canvas { display: block; width: 100%; height: 100%; }
@@ -187,7 +187,7 @@
   .band {
     border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
     background:
-      radial-gradient(80% 140% at 50% 0%, rgba(255,138,0,0.09), transparent 60%),
+      radial-gradient(80% 140% at 50% 0%, rgba(255,45,141,0.09), transparent 60%),
       var(--panel);
   }
   .band-inner { text-align: center; max-width: 46em; margin: 0 auto; }
@@ -486,7 +486,7 @@ test = <span class="c-good">"npm test"</span></pre>
           var d2 = dx * dx + dy * dy;
           if (d2 < 118 * 118) {
             var o = (1 - Math.sqrt(d2) / 118);
-            ctx.strokeStyle = 'rgba(255,138,0,' + (o * 0.22).toFixed(3) + ')';
+            ctx.strokeStyle = 'rgba(255,45,141,' + (o * 0.22).toFixed(3) + ')';
             ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
           }
@@ -502,8 +502,8 @@ test = <span class="c-good">"npm test"</span></pre>
         }
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.hub ? n.r + 1.6 : n.r, 0, Math.PI * 2);
-        ctx.fillStyle = n.hub ? 'rgba(255,138,0,0.95)' : 'rgba(236,235,232,0.55)';
-        if (n.hub) { ctx.shadowColor = 'rgba(255,138,0,0.8)'; ctx.shadowBlur = 10; }
+        ctx.fillStyle = n.hub ? 'rgba(255,45,141,0.95)' : 'rgba(236,235,232,0.55)';
+        if (n.hub) { ctx.shadowColor = 'rgba(255,45,141,0.8)'; ctx.shadowBlur = 10; }
         ctx.fill();
         ctx.shadowBlur = 0;
       }

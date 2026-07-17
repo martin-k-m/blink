@@ -10,6 +10,13 @@ Released on npm as `@martin-k-m/blink` and as GitHub releases with
 cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
 development milestones (merged to `main`, never tagged individually).
 
+## [0.6.1] — 2026-07-16
+
+Brand: Blink's accent is **pink (`#ff2d8d`)**, not orange — orange belongs to
+a sibling project (Beacon). Recolors the terminal UI, the HTML report, the
+dev-server placeholder, the dashboard, and the landing page accordingly. No
+functional changes.
+
 ## [0.6.0] — 2026-07-16
 
 The **context engine** — Blink's repositioning from a developer-acceleration

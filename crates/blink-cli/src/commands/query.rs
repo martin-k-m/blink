@@ -49,7 +49,7 @@ pub fn run(args: QueryArgs) -> Result<()> {
         println!();
         println!(
             "    {} nothing in the project's context matched.",
-            "\u{2192}".truecolor(255, 138, 0)
+            "\u{2192}".truecolor(255, 45, 141)
         );
         println!(
             "    {}",

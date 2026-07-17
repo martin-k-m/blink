@@ -6,7 +6,7 @@ pub fn banner(title: &str) {
     println!();
     println!(
         "{} {}",
-        "\u{26a1}".truecolor(255, 138, 0).bold(),
+        "\u{26a1}".truecolor(255, 45, 141).bold(),
         title.bold()
     );
 }
@@ -25,7 +25,7 @@ pub fn warning(label: impl AsRef<str>) {
 pub fn suggestion(label: impl AsRef<str>) {
     println!(
         "    {} {}",
-        "\u{2192}".truecolor(255, 138, 0),
+        "\u{2192}".truecolor(255, 45, 141),
         label.as_ref()
     );
 }

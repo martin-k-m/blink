@@ -8,7 +8,7 @@ use ratatui::Frame;
 
 use crate::app::App;
 
-const ACCENT: Color = Color::Rgb(255, 138, 0);
+const ACCENT: Color = Color::Rgb(255, 45, 141);
 
 pub fn draw(frame: &mut Frame, app: &App) {
     let area = frame.area();

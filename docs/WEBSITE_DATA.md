@@ -11,6 +11,7 @@ Everything below is implemented, tested, and published.
 
 ## Status
 
+- **Current release: `0.6.1`** (the context engine, on the pink brand).
 - **Published on npm** as **`@martin-k-m/blink`**, auto-released via CI on
   each version tag (with build provenance). The unscoped `blink-cli` is an
   unrelated, deprecated package — always use the scoped name.
@@ -31,6 +32,11 @@ Hero / description:
 
 > Blink is a Rust-powered developer context engine that builds reliable,
 > local understanding of any codebase — for humans and their tools.
+
+## Brand
+
+- **Accent:** pink **`#ff2d8d`** — *not* orange (orange belongs to the sibling
+  product Beacon). Dark ground (`#0b0b0c`/`#050505`), the 👁️ eye mark.
 
 ## Positioning
 

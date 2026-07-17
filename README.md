@@ -10,6 +10,8 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
 
+[![Beacon health](.github/beacon-health.svg)](https://github.com/martin-k-m/beacon)
+
 AI can generate code, but understanding an *existing* codebase — its
 structure, its conventions, how its pieces depend on each other — is still
 the hard part. Blink is the missing layer. It indexes your project and

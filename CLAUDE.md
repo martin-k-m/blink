@@ -40,8 +40,11 @@ as a signature alternate filename for the `blink.toml` schema, and a Phase 9
 `FEATURE_AUDIT.md`, more fixtures/docs). The workspace is now **fourteen
 crates**. 182 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
 `docs/roadmap.md`'s v0.5/v0.6 sections for what shipped and which spec
-collisions were resolved how.
-**Published & auto-releasing (currently `0.6.0`):** the repo is public and
+collisions were resolved how. **Brand:** Blink's accent is **pink
+(`#ff2d8d`)**, not orange — orange belongs to the sibling product **Beacon**
+(`v0.6.1` recolored the terminal UI, report, dashboard, placeholder, and
+landing page accordingly).
+**Published & auto-releasing (currently `0.6.1`):** the repo is public and
 on npm as **`@martin-k-m/blink`** (`npm install -g @martin-k-m/blink`). The
 unscoped `blink-cli` on npm is an unrelated package; always use the scoped
 name. **Releasing is fully automated** via `.github/workflows/release.yml`

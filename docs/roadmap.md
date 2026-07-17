@@ -147,6 +147,13 @@ plus 5 new subcommands:
       commands) and `include` (limit the graph to path roots). `blink config
       check` surfaces a `Context` line.
 
+### v0.6.1 — brand (shipped)
+
+- [x] Blink's accent is **pink (`#ff2d8d`)**, not orange — orange belongs to
+      the sibling product **Beacon**. Recolored the terminal UI, the HTML
+      report, the dashboard, the dev-server placeholder, and the landing
+      page. No functional changes.
+
 ## v0.7 — Blink Runtime (planned)
 
 This is where `blink build` stops being cache bookkeeping and starts being

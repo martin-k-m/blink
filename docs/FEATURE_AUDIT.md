@@ -169,14 +169,21 @@ help* (not delete) would be `scan` (largely subsumed by `inspect`) and
   around.
 - **`fmt` / `clippy -D warnings` / `test`** are clean across the
   workspace; there is no dead code gated behind `#[allow]`.
-- **Open, tracked separately:** GitHub Dependabot reports advisories on
-  `main`. These are transitive and predate this phase; investigating them
-  is its own task, noted in `docs/roadmap.md`. Note that `blink security`
-  is *not* enough on its own to close that out: it checks the
-  **declared** dependencies against OSV.dev, which on this workspace is 7
-  packages, not the 236 in `Cargo.lock`. Running it here reports no known
-  vulnerabilities — which is a narrower statement than Dependabot's, and
-  the gap is the point.
+- **Open, tracked separately:** GitHub Dependabot reports **4 advisories
+  on `main` (1 high, 2 moderate, 1 low)** — the count `git push` prints
+  back on every push to this repo. Still uninvestigated; it's its own
+  task, noted in `docs/roadmap.md`. Two things worth knowing before
+  someone picks it up:
+  - `blink security` is *not* enough on its own to close it out. It
+    checks the **declared** dependencies against OSV.dev — 7 packages on
+    this workspace, not the 236 in `Cargo.lock`. Run here it reports no
+    known vulnerabilities, which is a much narrower statement than
+    Dependabot's, and that gap is the point.
+  - The transitive crates most commonly flagged are already current in
+    `Cargo.lock` (`idna` 1.1.0, `url` 2.5.8, `rustls` 0.23.42, `ring`
+    0.17.14, `shlex` 2.0.1), so a blind `cargo update` is unlikely to be
+    the fix. The advisories need to be read in the Dependabot UI to know
+    what they actually cover — they may not be Cargo advisories at all.
 
 ## Cross-platform status
 

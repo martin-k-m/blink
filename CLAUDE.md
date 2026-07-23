@@ -57,13 +57,18 @@ workspace + `packages/blink-cli` versions together, then
 because releases created by the default `GITHUB_TOKEN` don't emit a
 triggering `release` event; the publish now lives inside release.yml.)
 
-**Outstanding, not yet addressed:** GitHub flagged 3 Dependabot
-vulnerabilities on `main` (1 high, 2 moderate) after the v0.4 merge —
-check https://github.com/martin-k-m/blink/security/dependabot. This
-hasn't been investigated. Running `blink security .` (a command this
-project itself built) against this repo's own dependency tree would be
-a reasonable first step, alongside checking Dependabot's actual advisory
-details.
+**Outstanding, not yet addressed:** GitHub flags **4** Dependabot
+vulnerabilities on `main` (1 high, 2 moderate, 1 low) — `git push` prints
+that count back on every push, and it's still 4 as of v0.6.1. Check
+https://github.com/martin-k-m/blink/security/dependabot. This hasn't been
+investigated, and two dead ends are already ruled out: `blink security .`
+only checks the **7 declared** dependencies (it reports none), not the 236
+transitive packages in `Cargo.lock`, and the crates usually behind Rust
+advisories are already at current versions there (`idna` 1.1.0, `rustls`
+0.23.42, `ring` 0.17.14, `shlex` 2.0.1), so `cargo update` alone is
+unlikely to help. The advisories need to be read in the Dependabot UI —
+they may not be Cargo advisories at all. See `docs/FEATURE_AUDIT.md`'s
+"Dependency & tech-debt notes".
 
 **The "phase 5–8" specs are now shipped (v0.5).** Universal project
 intelligence, the daily-driver task runner, the indexing engine, and the

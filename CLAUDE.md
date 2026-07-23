@@ -38,7 +38,7 @@ workflow engine (`blink-workflow`), and 21 subcommands (`inspect`/`optimize`/
 as a signature alternate filename for the `blink.toml` schema, and a Phase 9
 1.0-stabilization pass (actionable errors, grouped `--help`,
 `FEATURE_AUDIT.md`, more fixtures/docs). The workspace is now **fourteen
-crates**. 182 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
+crates**. 183 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
 `docs/roadmap.md`'s v0.5/v0.6 sections for what shipped and which spec
 collisions were resolved how. **Brand:** Blink's accent is **pink
 (`#ff2d8d`)**, not orange — orange belongs to the sibling product **Beacon**

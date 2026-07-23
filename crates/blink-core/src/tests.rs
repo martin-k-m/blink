@@ -2,7 +2,9 @@ use std::fs;
 
 use tempfile::TempDir;
 
-use crate::{BlinkConfig, Framework, Language, PackageManager, ProjectDetector};
+use crate::{
+    effective_ignored_dirs, BlinkConfig, Framework, Language, PackageManager, ProjectDetector,
+};
 
 fn write(dir: &TempDir, name: &str, contents: &str) {
     let path = dir.path().join(name);
@@ -288,4 +290,23 @@ fn custom_ignore_list_excludes_extra_directories_from_file_count() {
 
     // Cargo.toml, src/main.rs, blink.toml — vendor/some_file.rs excluded.
     assert_eq!(with_ignore.file_count, 3);
+}
+
+/// `coverage/` is regenerable test output — `blink clean` already offers to
+/// delete it, so scans must not count it as project source either.
+#[test]
+fn coverage_output_is_ignored_by_default() {
+    let dir = TempDir::new().unwrap();
+    write(&dir, "Cargo.toml", "[package]\nname = \"sample\"\n");
+    write(&dir, "src/main.rs", "fn main() {}");
+    write(&dir, "coverage/index.html", "<html></html>");
+    write(&dir, "coverage/lcov.info", "TN:");
+
+    let project = ProjectDetector::new().detect(dir.path()).unwrap();
+
+    // Cargo.toml and src/main.rs only.
+    assert_eq!(project.file_count, 2);
+    assert!(effective_ignored_dirs(dir.path())
+        .iter()
+        .any(|d| d == "coverage"));
 }

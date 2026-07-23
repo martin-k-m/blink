@@ -58,7 +58,7 @@ whichever file is present.
 | ---------------- | ------------- | ----------------- | ------- | ---------------------------------------------------------|
 | `[project]`       | `name`        | `string`          | —       | Project name. Seeded from the detected manifest.         |
 | `[project]`       | `type`        | `string`          | —       | Optional descriptive label (`"web"`, `"cli"`, ...), shown by `blink inspect`. Purely descriptive. |
-| `[project]`       | `ignore`      | `array<string>`   | `[]`    | Extra directory names to skip during scans, in addition to Blink's built-in list (`.git`, `node_modules`, `target`, `dist`, `build`, `.next`, `.turbo`, `.cache`, `.blink`, `__pycache__`, `.venv`, `venv`). Merged with `[scan].ignore`. |
+| `[project]`       | `ignore`      | `array<string>`   | `[]`    | Extra directory names to skip during scans, in addition to Blink's built-in list (`.git`, `node_modules`, `target`, `dist`, `build`, `.next`, `.turbo`, `.cache`, `.blink`, `coverage`, `__pycache__`, `.venv`, `venv`). Merged with `[scan].ignore`. Run `blink scan --verbose` to print the list actually in effect. |
 | `[scan]`          | `ignore`      | `array<string>`   | `[]`    | Alias/companion of `[project].ignore` (the two are merged and de-duplicated). Exists because the Phase 8 config shape uses `[scan]`. |
 | `[server]`        | `port`        | `integer`         | `3000`  | Default port for `blink run`. Overridden by `--port`.    |
 | `[optimization]`  | `cache`       | `bool`            | `true`  | When `false`, `blink build` scans files but skips reading/writing `.blink/cache.json`; `blink recommend`/`ci` also flag caching as disabled. |

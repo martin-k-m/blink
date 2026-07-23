@@ -10,6 +10,16 @@ Released on npm as `@martin-k-m/blink` and as GitHub releases with
 cross-platform binaries. Earlier `v0.1`–`v0.4` entries below are internal
 development milestones (merged to `main`, never tagged individually).
 
+## [Unreleased]
+
+### Changed
+- `coverage/` is now part of the built-in scan ignore list
+  (`DEFAULT_IGNORED_DIRS`). `blink clean` already treated it as
+  regenerable output, so `blink scan`/`context`/`filesystem` counting it
+  as project source was an inconsistency. Coverage reports no longer
+  inflate file counts, the context graph, or `blink filesystem`'s
+  source-vs-regenerable split.
+
 ## [0.6.1] — 2026-07-16
 
 Brand: Blink's accent is **pink (`#ff2d8d`)**, not orange — orange belongs to

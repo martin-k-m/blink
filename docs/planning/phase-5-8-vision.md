@@ -190,9 +190,9 @@ Automatically ignore: `node_modules`, `target`, `dist`, `build`,
 `blink.toml`.
 
 (Note: this already exists — `blink_core::DEFAULT_IGNORED_DIRS` +
-`[project].ignore`, documented in `docs/configuration.md`. `coverage`
-isn't currently in the built-in list; that'd be a one-line addition if
-picked up.)
+`[project].ignore`, documented in `docs/configuration.md`. `coverage` was
+the one name missing from the built-in list and has since been added, so
+scans and `blink clean` now agree that it's regenerable.)
 
 ### Parallel Analysis
 

@@ -20,6 +20,7 @@ pub const DEFAULT_IGNORED_DIRS: &[&str] = &[
     ".turbo",
     ".cache",
     ".blink",
+    "coverage",
     "__pycache__",
     ".venv",
     "venv",

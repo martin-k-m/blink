@@ -39,7 +39,7 @@ fn python_project_declares_expected_dependencies() {
         .iter()
         .find(|d| d.name == "flask")
         .unwrap();
-    assert_eq!(flask.version, "2.3.0");
+    assert_eq!(flask.version, "3.1.3");
 }
 
 #[test]

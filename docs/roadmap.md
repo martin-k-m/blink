@@ -190,7 +190,8 @@ preserved verbatim in
 historical context — but that document describes the *proposal*, not the
 delivered result. For what actually shipped and how the flagged collisions
 were resolved, read the v0.5 section above; the two items intentionally
-left out (a real plugin registry and `self update`) are tracked under v0.7.
+left out (a real plugin registry and `self update`) are tracked under v0.8
+— Ecosystem, above.
 
 ## A note on phase numbering
 
@@ -203,4 +204,4 @@ reused again for the installable-platform work that became v0.3/v0.4
 Rather than keep patching numbering that's drifted repeatedly, this file
 tracks by release. If you're looking for "Phase 3" or "Phase 4" from an
 earlier conversation, that's v0.3/v0.4 above; the original "Phase 3:
-Blink Runtime" content (a real bundler) is now v0.5.
+Blink Runtime" content (a real bundler) is now v0.7.

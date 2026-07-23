@@ -13,11 +13,15 @@ doesn't exist. If `path` already contains a recognizable project, the
 config is seeded with that project's detected name; otherwise it falls
 back to the directory name.
 
-## `blink scan [path]`
+## `blink scan [path] [--verbose]`
 
 Detects the project in `path` — language, framework, package manager,
 file count, and dependency count — and prints a short report. Exits
 non-zero if no recognizable manifest is found.
+
+| Flag              | Effect                                                        |
+| ----------------- | ------------------------------------------------------------- |
+| `-v`, `--verbose` | Print the diagnostic view instead: the resolved path, which manifest file was matched, whether it's a workspace, and the full list of ignore rules in effect (Blink's built-ins plus anything `[project].ignore`/`[scan].ignore` adds). Useful when a file count looks wrong and you need to see what was skipped. |
 
 ## `blink analyze [path] [--online] [--json]`
 

@@ -20,6 +20,17 @@ development milestones (merged to `main`, never tagged individually).
   inflate file counts, the context graph, or `blink filesystem`'s
   source-vs-regenerable split.
 
+### Documentation
+- `docs/cli.md` documents `blink scan --verbose`, which had shipped
+  without a flag reference.
+- `docs/FEATURE_AUDIT.md` re-measured for v0.6.1 (14 crates, 236
+  transitive dependencies, 4.6 MB release binary, fresh `blink benchmark`
+  figures) and extended with the five context-engine commands and the
+  three context-engine crates it was missing.
+- Fixed two wrong cross-references in `docs/roadmap.md`: the deferred
+  plugin registry / `self update` items are tracked under v0.8, and the
+  original "Blink Runtime" bundler work is v0.7.
+
 ## [0.6.1] — 2026-07-16
 
 Brand: Blink's accent is **pink (`#ff2d8d`)**, not orange — orange belongs to

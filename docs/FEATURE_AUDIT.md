@@ -1,15 +1,20 @@
 # Feature Audit
 
 A complete, honest inventory of every Blink command and subsystem, written
-for the v1.0 stabilization pass (Phase 9). For each area: what it's for,
-its status, how it's used, what it depends on, and its maintenance cost.
-The last two sections record what this audit decided to **keep, merge, or
-cut**, and why.
+for the v1.0 stabilization pass (Phase 9) and kept current since. For each
+area: what it's for, its status, how it's used, what it depends on, and its
+maintenance cost. The last two sections record what this audit decided to
+**keep, merge, or cut**, and why.
 
-Measured on the current build: **11 crates**, **195 unique transitive
-dependencies**, **4.4 MB release binary**, and (on this repo)
-**11 ms startup · 2 ms scan · 23 ms cold analysis · 6 ms cached** via
-`blink benchmark`.
+Measured on the current build (v0.6.1): **14 crates**, **236 unique
+transitive dependencies** (251 `Cargo.lock` packages minus the 15 workspace
+members), and a **4.6 MB release binary**. Against a clean checkout of this
+repo, `blink benchmark --runs 5` reports roughly **7 ms startup · 2 ms scan
+· 4 ms cold analysis · 7 ms cached**, stable across repeated warm runs on
+one Windows machine. Re-run it rather than trusting those four numbers —
+they are a snapshot of one machine, and on a project this small the cached
+path (which re-hashes every file to validate the entry) costs about as much
+as the analysis it replaces.
 
 ## How to read the tables
 
@@ -30,6 +35,20 @@ dependencies**, **4.4 MB release binary**, and (on this repo)
 | `inspect` | One-screen "what is this / how to run / where to start". | stable | core, index, workflow | med |
 | `doctor` | Verify runtimes/tools/env-var *names* are present. | stable | core, workflow | med |
 | `setup` | Copy `.env.example`→`.env`, install deps (asks first). | stable | core, workflow, proc | med |
+
+### Context engine
+
+| Command | Purpose | Status | Depends on | Maint. cost |
+| --- | --- | --- | --- | --- |
+| `context` | Build the context graph; print the understanding report. | stable | context (→ core, index, workflow) | med |
+| `query` | Ranked lexical search over the graph, grouped by kind. | stable | context, query | low |
+| `explain` | One file's doc, symbols, imports, and importers. | stable | context | low |
+| `map` | Areas plus the area→area edges between them. | stable | context, export | low |
+| `export` | Serialize the graph to JSON/YAML/Markdown/Mermaid. | stable | context, export | low |
+
+All five build the same `ContextGraph` and then read from it; only `context`
+owns construction. Every edge comes from an import that resolved to a real
+project file — an unresolvable import is dropped, never guessed at.
 
 ### Understand (analysis & intelligence)
 
@@ -97,6 +116,9 @@ dependencies**, **4.4 MB release binary**, and (on this repo)
 | `blink-dashboard` | `ratatui` terminal UI. | stable | high |
 | `blink-index` | Incremental file/symbol index. | stable | med |
 | `blink-workflow` | optimize/doctor/tasks/clean/env/duplicates/git. | stable | med |
+| `blink-context` | The context graph: areas, files, symbols, resolved references. | stable | med |
+| `blink-query` | Lexical, deterministic search over the context graph. | stable | low |
+| `blink-export` | Graph serialization: JSON, YAML, Markdown, Mermaid. | stable | low |
 
 ## Overlap analysis — kept deliberately
 
@@ -128,24 +150,33 @@ redundancy — the 1.0 fix is *organization* (a grouped `--help`, this
 document, and the refreshed docs), not amputation. If the project owner
 wants a smaller surface, the safest candidates to *hide from top-level
 help* (not delete) would be `scan` (largely subsumed by `inspect`) and
-`build` (thin until the v0.6 bundler lands) — flagged here, not acted on.
+`build` (thin until the v0.7 bundler lands) — flagged here, not acted on.
 
 ## Dependency & tech-debt notes
 
 - **No unnecessary dependencies** were added in the v0.5 work. `rayon`
   (parallel hashing in `blink-index`), `clap_complete` (completions),
-  `sha2`/`hex` (content hashing) are each used on a real path.
+  `sha2`/`hex` (content hashing) are each used on a real path. The v0.6
+  context engine added **no new external crates at all** —
+  `blink-context` reuses `serde`/`rayon`/`toml`, `blink-query` depends
+  only on `blink-context`, and `blink-export` adds only `serde_json`,
+  which the workspace already carried.
 - **Duplicate transitive versions** exist (`crossterm` 0.28/0.29,
-  `windows-sys` 0.48/0.59/0.61, `hashbrown`, `unicode-width`,
-  `webpki-roots`) — all pulled in by *different* upstream crates
-  (`ratatui` vs `indicatif`, etc.), not by Blink directly. They can't be
-  unified without upstream alignment and aren't worth pinning around.
+  `windows-sys` 0.48/0.52/0.59/0.61, `hashbrown`, `mio`, `rustix`,
+  `unicode-width`, `webpki-roots`) — all pulled in by *different* upstream
+  crates (`ratatui` vs `indicatif`, etc.), not by Blink directly. They
+  can't be unified without upstream alignment and aren't worth pinning
+  around.
 - **`fmt` / `clippy -D warnings` / `test`** are clean across the
   workspace; there is no dead code gated behind `#[allow]`.
-- **Open, tracked separately:** GitHub Dependabot reports 4 advisories on
-  `main` (1 high, 2 moderate, 1 low). These are transitive and predate
-  this phase; investigating them (starting with `blink security .`) is
-  its own task, noted in `docs/roadmap.md`.
+- **Open, tracked separately:** GitHub Dependabot reports advisories on
+  `main`. These are transitive and predate this phase; investigating them
+  is its own task, noted in `docs/roadmap.md`. Note that `blink security`
+  is *not* enough on its own to close that out: it checks the
+  **declared** dependencies against OSV.dev, which on this workspace is 7
+  packages, not the 236 in `Cargo.lock`. Running it here reports no known
+  vulnerabilities — which is a narrower statement than Dependabot's, and
+  the gap is the point.
 
 ## Cross-platform status
 

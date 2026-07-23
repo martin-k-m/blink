@@ -99,13 +99,48 @@ command uses the usual `0` success / `1` error convention.
 
 ## `blink security [path] [--json]`
 
-Checks every declared dependency against [OSV.dev](https://osv.dev)
-(Google's free, open Open Source Vulnerabilities database) for known
-vulnerabilities. Requires network access — this always makes one, unlike
-`--online` elsewhere, since checking vulnerabilities is this command's
-entire purpose. Reports vulnerability IDs (e.g. `GHSA-...`, `RUSTSEC-...`)
-without fetching or summarizing the underlying advisories; look those up
-directly if you need details.
+Audits the project's **fully resolved** dependency graph against
+[OSV.dev](https://osv.dev) (Google's free, open Open Source Vulnerabilities
+database).
+
+Blink reads the lockfile belonging to the project's ecosystem —
+`Cargo.lock`, `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml` — and
+queries every package it resolved, transitive dependencies included. That
+is where the overwhelming majority of real advisories live: this repository
+declares 7 dependencies and resolves 236.
+
+Findings are split into **direct** and **transitive**, and each transitive
+one shows the shortest dependency path that pulls it in
+(`via ratatui → lru`) when the lockfile records edges. `yarn.lock` and
+`pnpm-lock.yaml` give resolved versions but no paths, and the output says
+so rather than implying otherwise.
+
+```
+⚡ Blink Security
+
+  Audited           236 resolved packages from Cargo.lock (crates.io)
+
+  Transitive dependencies
+    ⚠ lru 0.12.5 via ratatui → lru
+        GHSA-rhfx-m35p-ff5j (low) — `IterMut` violates Stacked Borrows …
+
+  3 advisories across 3 of 236 audited packages (0 critical, 0 high, …)
+```
+
+Severity is the GitHub Advisory Database rating carried in the OSV record;
+advisories without one (most RUSTSEC "unmaintained" notices) show as
+`unrated` rather than being guessed at. Aliased IDs for the same advisory
+are counted once.
+
+Requires network access — this command always makes a request, unlike
+`--online` elsewhere, since checking advisories is its entire purpose.
+**If OSV.dev can't be reached the command says so and exits `1`**; it never
+reports an unverified project as clean. With no lockfile it falls back to
+declared manifest versions and warns that transitive dependencies aren't
+covered.
+
+`--json` prints the whole report — scope, audited count, status, findings
+with paths and advisory metadata — so CI can act on it.
 
 ## `blink report [path] [--json|--markdown|--html] [--output <file>] [--online]`
 

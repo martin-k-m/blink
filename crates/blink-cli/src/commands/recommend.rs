@@ -14,9 +14,12 @@ pub fn run(args: RecommendArgs) -> Result<()> {
         .detect(&args.path)
         .with_context(|| format!("could not analyze {}", args.path.display()))?;
     let analysis = analyze_cached(&project, &args.path, args.online).report;
+    // `find_vulnerabilities` returns `None` when the audit couldn't run at
+    // all, which flattens to the same "unknown" verdict as not asking.
     let vulnerabilities = args
         .online
-        .then(|| blink_analyzer::find_vulnerabilities(&project));
+        .then(|| blink_analyzer::find_vulnerabilities(&project))
+        .flatten();
     let recommendations =
         RecommendationEngine::evaluate(&analysis, &args.path, vulnerabilities.as_deref());
     spinner.finish_and_clear();

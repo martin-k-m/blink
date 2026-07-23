@@ -30,7 +30,12 @@ pub fn run(args: CiArgs) -> Result<()> {
 
     let analysis = analyze_cached(&project, &args.path, args.online).report;
     let health = compute_health(&analysis, &args.path);
-    let vulnerabilities = args.online.then(|| find_vulnerabilities(&project));
+    // `None` covers both "not asked for" and "the audit couldn't run"; either
+    // way the security verdict is unknown, never a silent pass.
+    let vulnerabilities = args
+        .online
+        .then(|| find_vulnerabilities(&project))
+        .flatten();
     let recommendations =
         RecommendationEngine::evaluate(&analysis, &args.path, vulnerabilities.as_deref());
 

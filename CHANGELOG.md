@@ -12,6 +12,39 @@ development milestones (merged to `main`, never tagged individually).
 
 ## [Unreleased]
 
+### Fixed
+- **`blink security` audited only declared dependencies, not the resolved
+  dependency graph.** On this workspace that meant 7 packages checked
+  instead of the 236 in `Cargo.lock` — and since nearly every real Rust
+  advisory lands on a transitive dependency, the command reported clean
+  projects that weren't. It now reads the lockfile belonging to the
+  project's ecosystem (`Cargo.lock`, `package-lock.json`, `yarn.lock`, or
+  `pnpm-lock.yaml`) and queries every package it resolved.
+- **A failed OSV.dev lookup was rendered as "no vulnerabilities found".**
+  The request error was swallowed and the empty result printed as a pass.
+  `blink security` now distinguishes "audited N packages, 0 advisories"
+  from "could not audit", prints that nothing was verified, and exits
+  non-zero. `blink recommend`/`blink ci` likewise report the security
+  verdict as *unknown* rather than *ok* when the audit couldn't run.
+
+### Added
+- `blink security` splits findings into **direct** and **transitive**, and
+  shows the shortest dependency path that pulls each transitive package in
+  (`via ratatui → lru`), reconstructed from the lockfile's recorded edges.
+  `yarn.lock` and `pnpm-lock.yaml` supply resolved versions but no edges,
+  and the output says so instead of implying full coverage.
+- Findings carry the advisory's real summary and GitHub Advisory Database
+  severity, fetched from the OSV record. Advisories without a published
+  rating (most RUSTSEC "unmaintained" notices) show as `unrated` rather
+  than being guessed at, and IDs OSV records as aliases of one another
+  (`GHSA-…` / `RUSTSEC-…`) are counted once.
+- `blink security --json` now emits the whole report — scope, audited
+  count, status, and classified findings — instead of a bare package list.
+- `blink-parser` reads `yarn.lock` (v1 and Berry) and `pnpm-lock.yaml`
+  (v5/v6/v9), and now recovers dependency edges and workspace-member flags
+  from `Cargo.lock` and `package-lock.json`. Dependency counts, duplicate
+  detection, and size analysis pick up yarn/pnpm projects as a result.
+
 ### Changed
 - `coverage/` is now part of the built-in scan ignore list
   (`DEFAULT_IGNORED_DIRS`). `blink clean` already treated it as

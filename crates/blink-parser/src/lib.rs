@@ -12,7 +12,10 @@ mod tests;
 
 pub use dependency::RawDependency;
 pub use error::{ParserError, Result};
-pub use lockfile::{parse_cargo_lock, parse_npm_lock, LockedPackage};
+pub use lockfile::{
+    parse_cargo_lock, parse_npm_lock, parse_npm_lock_direct, parse_pnpm_lock, parse_yarn_lock,
+    LockedPackage,
+};
 pub use manifest::{
     parse_cargo_manifest, parse_package_json, parse_requirements_txt, CargoManifest,
     PackageJsonManifest,

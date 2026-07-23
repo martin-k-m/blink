@@ -63,7 +63,9 @@ The "clone the repo to use it" → "install it like a real tool" milestone:
 - [x] `blink ci` — pipeline-friendly exit codes (0 pass / 1 warnings / 2
       failure).
 - [x] `blink security` — OSV.dev vulnerability lookups (opt-in, since it's
-      a network call).
+      a network call). Broadened after v0.6.1 to audit the full resolved
+      lockfile graph rather than only declared dependencies; see
+      [`docs/analysis.md`](analysis.md).
 - [x] `blink report --json|--markdown|--html` — full document export, not
       just the terminal view.
 - [x] A global, per-user analysis cache (separate from the project-local

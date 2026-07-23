@@ -147,7 +147,8 @@ fn security_rule(vulnerabilities: Option<&[VulnerablePackage]>) -> Recommendatio
         None => Recommendation {
             category: RecommendationCategory::Security,
             status: Status::Unknown,
-            message: "Vulnerabilities: unknown (run with --online to check)".to_string(),
+            message: "Vulnerabilities: unknown (needs --online and a reachable osv.dev)"
+                .to_string(),
         },
         Some([]) => Recommendation {
             category: RecommendationCategory::Security,

@@ -58,7 +58,7 @@ pub enum Command {
     Watch(WatchArgs),
     /// Run analysis for CI: exits 0 (pass), 1 (warnings), or 2 (failure).
     Ci(CiArgs),
-    /// Check dependencies against OSV.dev for known vulnerabilities.
+    /// Audit the fully resolved dependency graph against OSV.dev.
     Security(SecurityArgs),
     /// Export a full project report as JSON, Markdown, or HTML.
     Report(ReportArgs),
@@ -235,6 +235,16 @@ pub struct CiArgs {
 }
 
 #[derive(Args)]
+#[command(long_about = "Audit this project's dependencies against OSV.dev.\n\
+\n\
+Reads the lockfile (Cargo.lock, package-lock.json, yarn.lock, or\n\
+pnpm-lock.yaml) and queries every package it resolved, so transitive\n\
+dependencies — where most real advisories live — are covered, not just the\n\
+handful declared in the manifest. Findings are split into direct and\n\
+transitive, with the dependency path shown where the lockfile records one.\n\
+\n\
+Requires network access. If OSV.dev can't be reached the command says so and\n\
+exits non-zero; it never reports an unverified project as clean.")]
 pub struct SecurityArgs {
     /// Directory to check.
     #[arg(default_value = ".")]

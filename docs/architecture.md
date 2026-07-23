@@ -40,8 +40,12 @@ npm package (packages/blink-cli)  ── downloads a prebuilt binary, execs it
 
 The lowest layer: reads and parses manifest and lockfile *formats* —
 `Cargo.toml`, `package.json`, `requirements.txt`, `Cargo.lock`,
-`package-lock.json` — into plain structured data (`RawDependency`,
-`LockedPackage`). It has no concept of "project," "framework," or
+`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` — into plain structured
+data (`RawDependency`, `LockedPackage`). Cargo and npm locks also yield
+dependency *edges* and a direct-dependency set, which is what lets the
+security audit show which declared dependency pulls a vulnerable package
+in; yarn and pnpm yield resolved versions only. It has no concept of
+"project," "framework," or
 "health." Splitting this out means the file-format knowledge lives in one
 place instead of being duplicated between detection and analysis.
 
@@ -77,7 +81,10 @@ Takes a `Project` (from `blink-core`) and a project root, and produces an
   (`node_modules` for JS/TS, the local Cargo registry cache for Rust).
 - **Outdated dependencies** *(opt-in, `--online`)*.
 - **Vulnerabilities** *(opt-in, `--online`, `blink security`)* — queries
-  OSV.dev.
+  OSV.dev for every package the *lockfile* resolved, not just the declared
+  manifest entries, and classifies each finding as direct or transitive
+  with the dependency path that pulls it in. An unreachable advisory
+  source is reported as such, never as "clean".
 - **Health score** — a 0-100 heuristic derived from all of the above, plus
   `compute_health` for the three-way sub-score breakdown `blink health`
   shows (dependencies/configuration/code organization).

@@ -132,15 +132,86 @@ checking one concrete fact:
 ## Vulnerability checking (`blink security`, `--online`)
 
 Queries [OSV.dev](https://osv.dev) — Google's free, open Open Source
-Vulnerabilities database — via its batch API, one query per declared
-dependency at its declared version. Ecosystem mapping: Rust → `crates.io`,
-JS/TS → `npm`, Python → `PyPI`.
+Vulnerabilities database — via its batch API. Ecosystem mapping: Rust →
+`crates.io`, JS/TS → `npm`, Python → `PyPI`.
 
-Blink reports the vulnerability IDs OSV returns (e.g. `GHSA-...`,
-`RUSTSEC-...`) without fetching or summarizing the underlying advisory
-text — look an ID up directly at `osv.dev/vulnerability/<id>` for details.
-This is the only check besides the outdated-package lookup that touches
-the network, and it's always opt-in.
+### What gets audited
+
+The audit set is the **fully resolved dependency graph**, read from the
+lockfile belonging to the project's ecosystem:
+
+| Lockfile            | Resolved versions | Dependency edges |
+| ------------------- | ----------------- | ---------------- |
+| `Cargo.lock`        | yes               | yes              |
+| `package-lock.json` | yes               | yes              |
+| `yarn.lock`         | yes               | no               |
+| `pnpm-lock.yaml`    | yes               | no               |
+
+Only the lockfiles matching the detected ecosystem are considered, so a
+`Cargo.lock` sitting beside a JS project is never queried against `npm`.
+Cargo workspace members (`[[package]]` entries with no `source`) are the
+project itself and are excluded — they aren't published packages, so
+there's nothing to look up. Each distinct `(name, version)` pair is queried
+once, in batches of 500.
+
+**Rust matters here.** Before this landed, `blink security` queried only
+the versions *declared* in the manifest — for this repository, 7 packages
+instead of the 236 the lockfile resolves. Nearly every real Rust advisory
+lands on a transitive dependency, so a declared-only audit reported clean
+projects that weren't.
+
+When **no lockfile exists** the audit falls back to declared manifest
+versions (with semver range operators stripped) and says so explicitly:
+transitive dependencies are not covered by that result. Python always
+takes this path, since Blink reads no Python lockfile format.
+
+### How findings are classified
+
+- **Direct** — the package name appears in the project manifest, or in the
+  lockfile's recorded direct-dependency set (for Cargo, the union of every
+  workspace member's dependencies; for npm, the root entry's
+  `dependencies`/`devDependencies`/`optionalDependencies`).
+- **Transitive** — everything else.
+- **Dependency path** — the shortest chain from any direct dependency to
+  the affected package, found by multi-source breadth-first search over the
+  lockfile's recorded edges (`ratatui → lru`). Name-keyed, so a package
+  resolved at two versions shares one node. When the lockfile records no
+  edges Blink shows no path at all rather than guessing one.
+
+### Severity
+
+Severity comes from the `database_specific.severity` field of the OSV
+record — that is, the GitHub Advisory Database rating GitHub itself shows
+(`critical` / `high` / `moderate` / `low`). Advisories without one, which
+includes most RUSTSEC-only records such as "crate is unmaintained"
+notices, are reported **unrated**. Blink never infers a severity.
+
+OSV often stores one advisory under several IDs (a `GHSA-...` record and
+its `RUSTSEC-...` alias). Those are collapsed into a single advisory using
+OSV's own `aliases` list, preferring the record that carries a severity,
+so counts don't double up. The summary line counts *distinct* advisories,
+so one advisory affecting two packages counts once.
+
+### "Clean" means clean
+
+The report distinguishes four outcomes, and only the first is a pass:
+
+| Outcome              | Meaning                                                 | Exit |
+| -------------------- | ------------------------------------------------------- | ---- |
+| completed            | Every audited package was checked. Findings may be zero. | `0`  |
+| source unavailable   | OSV.dev couldn't be reached or returned garbage.         | `1`  |
+| unsupported ecosystem| No OSV ecosystem for this project's language.            | `0`  |
+| nothing to audit     | No dependencies and no lockfile.                         | `0`  |
+
+A failed lookup is never rendered as "no vulnerabilities found" — the
+command prints that nothing was verified and exits non-zero. Likewise
+`blink recommend`/`blink ci` report the security verdict as *unknown*, not
+*ok*, when the audit couldn't run.
+
+Advisory records are fetched individually so findings can carry a real
+summary and severity. If a record can't be fetched, the ID is still
+reported — just without metadata — and the report says the detail set is
+incomplete.
 
 ## The global analysis cache
 

@@ -59,7 +59,7 @@ project file — an unresolvable import is dropped, never guessed at.
 | `health` | Health score with three sub-scores. | stable | analyzer, cache | low |
 | `recommend` | Findings grouped Performance/Maintenance/Security. | stable | analyzer, cache | low |
 | `optimize` | Rule-based 0–100 score across six categories. | stable | analyzer, index, workflow | med |
-| `security` | OSV.dev vulnerability lookup (network). | stable | analyzer | med |
+| `security` | OSV.dev audit of the full resolved lockfile graph (network). | stable | analyzer, parser | med |
 | `index` | Build/refresh the incremental file+symbol index. | stable | index | med |
 | `status` | Index stats (files/symbols/lines/size/languages). | stable | index | low |
 | `search` | Search indexed paths, or symbols with `--symbols`. | stable | index | low |
@@ -169,21 +169,33 @@ help* (not delete) would be `scan` (largely subsumed by `inspect`) and
   around.
 - **`fmt` / `clippy -D warnings` / `test`** are clean across the
   workspace; there is no dead code gated behind `#[allow]`.
-- **Open, tracked separately:** GitHub Dependabot reports **4 advisories
-  on `main` (1 high, 2 moderate, 1 low)** — the count `git push` prints
-  back on every push to this repo. Still uninvestigated; it's its own
-  task, noted in `docs/roadmap.md`. Two things worth knowing before
-  someone picks it up:
-  - `blink security` is *not* enough on its own to close it out. It
-    checks the **declared** dependencies against OSV.dev — 7 packages on
-    this workspace, not the 236 in `Cargo.lock`. Run here it reports no
-    known vulnerabilities, which is a much narrower statement than
-    Dependabot's, and that gap is the point.
-  - The transitive crates most commonly flagged are already current in
-    `Cargo.lock` (`idna` 1.1.0, `url` 2.5.8, `rustls` 0.23.42, `ring`
-    0.17.14, `shlex` 2.0.1), so a blind `cargo update` is unlikely to be
-    the fix. The advisories need to be read in the Dependabot UI to know
-    what they actually cover — they may not be Cargo advisories at all.
+- **Dependency advisories.** `blink security` audits the full resolved
+  `Cargo.lock` (236 queried packages — 251 entries minus the 15 workspace
+  members, which aren't published crates) and finds **3 advisories**, all
+  transitive:
+
+  | Package | Version | Advisory | Severity | Path |
+  | --- | --- | --- | --- | --- |
+  | `lru` | 0.12.5 | `GHSA-rhfx-m35p-ff5j` (= `RUSTSEC-2026-0002`) | low | `ratatui → lru` |
+  | `number_prefix` | 0.4.0 | `RUSTSEC-2025-0119` (unmaintained) | unrated | `indicatif → number_prefix` |
+  | `paste` | 1.0.15 | `RUSTSEC-2024-0436` (unmaintained) | unrated | `ratatui → paste` |
+
+  This matches `cargo audit` exactly: run against the same lockfile it
+  reports zero *vulnerabilities* and these same three as informational
+  warnings (two unmaintained, one unsound). None is fixable by
+  `cargo update` alone — two are upstream "unmaintained" notices with no
+  fixed version, and the third needs a `ratatui` release that bumps `lru`.
+
+  **These 3 are not GitHub's Dependabot count.** Blink audits one
+  ecosystem per invocation — the project detected at the given path, which
+  at the repo root is Rust — whereas Dependabot scans every manifest in the
+  tree. The 4 alerts Dependabot reported (1 high, 2 moderate, 1 low) came
+  from the *test fixtures*, and were cleared in `f0df4e6` by bumping
+  `flask`/`requests`/`express` to versions OSV reports clean. Point
+  `blink security` at a subdirectory to audit it in its own ecosystem;
+  `blink security examples/react-app`, for instance, returns 16 npm
+  advisories against the `vite` 5.2.0 that example pins (declared-only,
+  since the example has no lockfile).
 
 ## Cross-platform status
 

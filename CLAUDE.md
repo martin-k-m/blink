@@ -38,7 +38,7 @@ workflow engine (`blink-workflow`), and 21 subcommands (`inspect`/`optimize`/
 as a signature alternate filename for the `blink.toml` schema, and a Phase 9
 1.0-stabilization pass (actionable errors, grouped `--help`,
 `FEATURE_AUDIT.md`, more fixtures/docs). The workspace is now **fourteen
-crates**. 183 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
+crates**. 200 tests passing, `cargo fmt`/`clippy -D warnings` clean. See
 `docs/roadmap.md`'s v0.5/v0.6 sections for what shipped and which spec
 collisions were resolved how. **Brand:** Blink's accent is **pink
 (`#ff2d8d`)**, not orange — orange belongs to the sibling product **Beacon**
@@ -57,18 +57,26 @@ workspace + `packages/blink-cli` versions together, then
 because releases created by the default `GITHUB_TOKEN` don't emit a
 triggering `release` event; the publish now lives inside release.yml.)
 
-**Outstanding, not yet addressed:** GitHub flags **4** Dependabot
-vulnerabilities on `main` (1 high, 2 moderate, 1 low) — `git push` prints
-that count back on every push, and it's still 4 as of v0.6.1. Check
-https://github.com/martin-k-m/blink/security/dependabot. This hasn't been
-investigated, and two dead ends are already ruled out: `blink security .`
-only checks the **7 declared** dependencies (it reports none), not the 236
-transitive packages in `Cargo.lock`, and the crates usually behind Rust
-advisories are already at current versions there (`idna` 1.1.0, `rustls`
-0.23.42, `ring` 0.17.14, `shlex` 2.0.1), so `cargo update` alone is
-unlikely to help. The advisories need to be read in the Dependabot UI —
-they may not be Cargo advisories at all. See `docs/FEATURE_AUDIT.md`'s
-"Dependency & tech-debt notes".
+**Dependency advisories — resolved.** The 4 Dependabot alerts that had
+been open since v0.4 (1 high, 2 moderate, 1 low) came from the **test
+fixtures**, not from real dependencies; `f0df4e6` bumped
+`flask`/`requests`/`express` off the flagged versions. Separately,
+`blink security` was rebuilt to be worth trusting: it used to audit only
+the **7 declared** dependencies and reported this repo clean, which was
+false reassurance. It now audits the **full resolved `Cargo.lock`** (236
+queried packages) and finds 3 transitive advisories — `lru` 0.12.5
+(`GHSA-rhfx-m35p-ff5j`, low, via `ratatui`), `number_prefix` 0.4.0
+(`RUSTSEC-2025-0119`, unmaintained, via `indicatif`), and `paste` 1.0.15
+(`RUSTSEC-2024-0436`, unmaintained, via `ratatui`), matching `cargo
+audit`'s three informational warnings exactly. None is fixable by
+`cargo update`: two are upstream "unmaintained" notices with no fixed
+version, the third needs a `ratatui` release that bumps `lru`. Note that
+Blink audits **one ecosystem per invocation** (the project detected at the
+given path), so point it at a subdirectory to audit that manifest — e.g.
+`blink security examples/react-app` returns 16 npm advisories against the
+`vite` 5.2.0 that example pins. See `docs/FEATURE_AUDIT.md`'s "Dependency
+& tech-debt notes" and `docs/analysis.md`'s vulnerability-checking
+section.
 
 **The "phase 5–8" specs are now shipped (v0.5).** Universal project
 intelligence, the daily-driver task runner, the indexing engine, and the
